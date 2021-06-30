@@ -1,13 +1,4 @@
-const googleTrends = require("google-trends-api");
-
-async function getTrends({ keyword, startTime, endTime }) {
-  const res = await googleTrends.interestOverTime({
-    keyword,
-    startTime,
-    endTime,
-  });
-  return JSON.parse(res).default.timelineData;
-}
+const { getTrends } = require("./utils/services");
 
 (async () => {
   try {
@@ -17,7 +8,7 @@ async function getTrends({ keyword, startTime, endTime }) {
       keyword: "bitcoin",
       startTime: startDate,
     });
-    console.log(result.map((data) => new Date(data.timelineAxisTime)));
+    console.log(result);
   } catch (e) {
     console.log(e);
   }
