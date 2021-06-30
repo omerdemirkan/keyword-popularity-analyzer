@@ -1,0 +1,23 @@
+{
+  "name": "keyword-popularity-analyzer",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/omerdemirkan/keyword-popularity-analyzer.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/omerdemirkan/keyword-popularity-analyzer/issues"
+  },
+  "homepage": "https://github.com/omerdemirkan/keyword-popularity-analyzer#readme",
+  "dependencies": {
+    "google-trends-api": "^4.9.2"
+  }
+}
