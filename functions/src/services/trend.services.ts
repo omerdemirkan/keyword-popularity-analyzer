@@ -1,10 +1,14 @@
 import { differenceInWeeks, sub } from "date-fns";
-import { interestOverTime, Options, TimelineData } from "google-trends-api";
+import {
+  interestOverTime,
+  Options,
+  GoogleTrendsTimelineData,
+} from "google-trends-api";
 import { KeywordPopularity } from "../types/popularity.types";
 
 export async function fetchGoogleTrends(
   options: Options
-): Promise<TimelineData[]> {
+): Promise<GoogleTrendsTimelineData[]> {
   const res = await interestOverTime(options);
   return JSON.parse(res).default.timelineData;
 }
@@ -31,7 +35,9 @@ export function nWeekLow(timeline: KeywordPopularity[], from?: number): number {
   }
   startIndex += 1;
 
-  return differenceInWeeks(timeline[startIndex].date, timeline[endIndex].date);
+  return Math.abs(
+    differenceInWeeks(timeline[startIndex].date, timeline[endIndex].date)
+  );
 }
 
 function mapGoogleTrendsTimeString(timeString: string): Date {
@@ -43,7 +49,7 @@ function mapGoogleTrendsTimeString(timeString: string): Date {
 function mapGoogleTrendsTimelineData({
   value,
   time,
-}: TimelineData): KeywordPopularity {
+}: GoogleTrendsTimelineData): KeywordPopularity {
   return {
     value: Array.isArray(value) ? value[0] : 0,
     date: mapGoogleTrendsTimeString(time),

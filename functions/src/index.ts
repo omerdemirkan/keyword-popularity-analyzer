@@ -9,3 +9,4 @@ admin.initializeApp();
 // // https://firebase.google.com/docs/functions/typescript
 
 export const getTrends = functions.https.onRequest(controllers.getTrends);
+export const getNWeekLow = functions.https.onRequest(controllers.getNWeekLow);

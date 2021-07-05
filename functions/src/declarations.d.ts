@@ -13,7 +13,7 @@ declare module "google-trends-api" {
   }
   export function interestOverTime(options: Options): Promise<string>;
 
-  export interface TimelineData {
+  export interface GoogleTrendsTimelineData {
     time: string;
     formattedTime: string;
     formattedAxisTime: string;
