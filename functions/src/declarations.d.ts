@@ -14,6 +14,16 @@ declare module "google-trends-api" {
   export function interestOverTime(options: Options): Promise<string>;
 
   export interface TimelineData {
-    placeholder: boolean;
+    time: string;
+    formattedTime: string;
+    formattedAxisTime: string;
+    value?: number[] | null;
+    hasData?: boolean[] | null;
+    formattedValue?: string[] | null;
+    axisNote?: AxisNote | null;
+    isPartial?: boolean | null;
+  }
+  export interface AxisNote {
+    text: string;
   }
 }
