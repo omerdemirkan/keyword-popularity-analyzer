@@ -1,14 +1,19 @@
-const googleTrends = require("google-trends-api");
+// @ts-ignore
+import googleTrends from "google-trends-api";
 
-module.exports.getTrends = async function getTrends({
+export async function getTrends({
   keyword,
   startTime,
   endTime,
-}) {
+}: {
+  keyword: string;
+  startTime?: Date;
+  endTime?: Date;
+}): Promise<null> {
   const res = await googleTrends.interestOverTime({
     keyword,
     startTime,
     endTime,
   });
   return JSON.parse(res).default.timelineData;
-};
+}
