@@ -1,13 +1,11 @@
 import { config } from "../config";
 import { Controller } from "../types";
-import * as sendGrid from "@sendgrid/mail";
-
-sendGrid.setApiKey(config.sendGrid.apiKey);
+import { sendEmail } from "../services/email.services";
 
 export const sendMail: Controller = async (req, res) => {
   try {
     if (!req.query.to) throw new Error("email destination wasn't sent.");
-    await sendGrid.send({
+    await sendEmail({
       to: req.query.to as string,
       from: "info@remindmeaboutbitcoin.com",
       templateId: config.sendGrid.templatesIds.keywordPing,
