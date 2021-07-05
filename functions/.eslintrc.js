@@ -25,5 +25,6 @@ module.exports = {
     quotes: ["error", "double"],
     "object-curly-spacing": ["error", "always"],
     "quote-props": ["error", "as-needed"],
+    "space-before-function-paren": ["error", "always"],
   },
 };
