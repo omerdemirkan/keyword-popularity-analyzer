@@ -1,1 +1,1 @@
-export * from "./sendMail";
+export * from "./getTrends";

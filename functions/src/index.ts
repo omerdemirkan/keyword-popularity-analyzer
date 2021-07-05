@@ -8,4 +8,4 @@ admin.initializeApp();
 // // Start writing Firebase Functions
 // // https://firebase.google.com/docs/functions/typescript
 
-export const sendMail = functions.https.onRequest(controllers.sendMail);
+export const getTrends = functions.https.onRequest(controllers.getTrends);

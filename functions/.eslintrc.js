@@ -11,6 +11,7 @@ module.exports = {
     "plugin:import/typescript",
     "google",
     "plugin:@typescript-eslint/recommended",
+    "prettier",
   ],
   parser: "@typescript-eslint/parser",
   parserOptions: {
@@ -22,10 +23,6 @@ module.exports = {
   ],
   plugins: ["@typescript-eslint", "import"],
   rules: {
-    quotes: ["error", "double"],
-    "object-curly-spacing": ["error", "always"],
-    "quote-props": ["error", "as-needed"],
-    "space-before-function-paren": ["error", "always"],
-    "require-jsdoc": ["error", "ignore"],
+    "require-jsdoc": 0,
   },
 };

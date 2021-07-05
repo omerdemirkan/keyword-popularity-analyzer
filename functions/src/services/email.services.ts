@@ -3,8 +3,10 @@ import * as sendGrid from "@sendgrid/mail";
 
 sendGrid.setApiKey(config.sendGrid.apiKey);
 
-export async function sendEmail(
-  data: sendGrid.MailDataRequired | sendGrid.MailDataRequired[]
-) {
-  await sendGrid.send(data);
+type MailData = sendGrid.MailDataRequired & {
+  type: "info" | "help" | "notification";
+};
+
+export async function sendEmail(data: MailData | MailData[]) {
+  return await sendGrid.send(data);
 }
