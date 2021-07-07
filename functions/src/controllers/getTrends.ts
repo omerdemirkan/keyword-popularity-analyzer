@@ -3,7 +3,7 @@ import { Controller } from "../types";
 
 export const getTrends: Controller = async function (req, res) {
   const keyword = req.query.keyword;
-  const weeks = +(req.query.weeks as any) || 104;
+  const weeks = req.query.weeks && +req.query.weeks ? +req.query.weeks : 104;
   try {
     if (typeof keyword !== "string") throw new Error("keyword query expected.");
     const results = await fetchKeywordPopularity(keyword, weeks);
