@@ -4,7 +4,8 @@ import {
   Options,
   GoogleTrendsTimelineData,
 } from "google-trends-api";
-import { KeywordPopularity } from "../types/popularity.types";
+import { ALERT_WEEK_BREAKPOINTS } from "../constants";
+import { KeywordAudit, KeywordPopularity } from "../types/trend.types";
 
 export async function fetchGoogleTrends(
   options: Options
@@ -13,19 +14,36 @@ export async function fetchGoogleTrends(
   return JSON.parse(res).default.timelineData;
 }
 
-export async function fetchKeywordPopularity(
+export async function auditKeyword(
   keyword: string,
-  weeks = 104
-): Promise<KeywordPopularity[]> {
-  const startDate = sub(new Date(), { weeks });
+  weeks = 105
+): Promise<KeywordAudit> {
+  const startDate = sub(new Date(), { weeks: weeks + 1 });
   const response = await fetchGoogleTrends({ keyword, startTime: startDate });
+  const timeline = response.map(mapGoogleTrendsTimelineData);
+  const keywordNWeekLow = getTimelineNWeekLow(timeline);
 
-  return response.map(mapGoogleTrendsTimelineData);
+  const possibleBreakpoints = ALERT_WEEK_BREAKPOINTS.filter(
+    (breakpoint) => breakpoint < keywordNWeekLow
+  );
+  const breakpointWeeks = possibleBreakpoints.length
+    ? Math.min(...possibleBreakpoints)
+    : null;
+
+  return {
+    keyword,
+    timeline,
+    nWeekLow: keywordNWeekLow,
+    breakpointWeeks,
+  };
 }
 
 // Function that returns how many weeks back you have to go
 // for the keyword to be more popular.
-export function nWeekLow(timeline: KeywordPopularity[], from?: number): number {
+export function getTimelineNWeekLow(
+  timeline: KeywordPopularity[],
+  from?: number
+): number {
   const endIndex = from || timeline.length - 1;
   let startIndex = endIndex;
   while (startIndex--) {

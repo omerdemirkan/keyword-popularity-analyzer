@@ -1,4 +1,4 @@
-import { fetchKeywordPopularity } from "../services";
+import { auditKeyword } from "../services";
 import { Controller } from "../types";
 
 export const getTrends: Controller = async function (req, res) {
@@ -6,7 +6,7 @@ export const getTrends: Controller = async function (req, res) {
   const weeks = req.query.weeks && +req.query.weeks ? +req.query.weeks : 104;
   try {
     if (typeof keyword !== "string") throw new Error("keyword query expected.");
-    const results = await fetchKeywordPopularity(keyword, weeks);
+    const results = await auditKeyword(keyword, weeks);
     res.send(
       `Results successfully fetched!\n<pre>${JSON.stringify(
         results,
