@@ -20,7 +20,5 @@
     "url": "https://github.com/omerdemirkan/keyword-popularity-analyzer/issues"
   },
   "homepage": "https://github.com/omerdemirkan/keyword-popularity-analyzer#readme",
-  "dependencies": {
-    "google-trends-api": "^4.9.2"
-  }
+  "dependencies": {}
 }
