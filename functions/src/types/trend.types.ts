@@ -3,9 +3,11 @@ export interface KeywordPopularity {
   value: number;
 }
 
+export type WeekBracket = [number, number] | null;
+
 export interface KeywordAudit {
   keyword: string;
   timeline: KeywordPopularity[];
   nWeekLow: number;
-  breakpointWeeks: number | null;
+  weekBracket: WeekBracket;
 }

@@ -5,7 +5,11 @@ import {
   GoogleTrendsTimelineData,
 } from "google-trends-api";
 import { ALERT_WEEK_BREAKPOINTS } from "../constants";
-import { KeywordAudit, KeywordPopularity } from "../types/trend.types";
+import {
+  KeywordAudit,
+  KeywordPopularity,
+  WeekBracket,
+} from "../types/trend.types";
 
 export async function fetchGoogleTrends(
   options: Options
@@ -21,20 +25,14 @@ export async function auditKeyword(
   const startDate = sub(new Date(), { weeks: weeks + 1 });
   const response = await fetchGoogleTrends({ keyword, startTime: startDate });
   const timeline = response.map(mapGoogleTrendsTimelineData);
-  const keywordNWeekLow = getTimelineNWeekLow(timeline);
-
-  const possibleBreakpoints = ALERT_WEEK_BREAKPOINTS.filter(
-    (breakpoint) => breakpoint < keywordNWeekLow
-  );
-  const breakpointWeeks = possibleBreakpoints.length
-    ? Math.min(...possibleBreakpoints)
-    : null;
+  const nWeekLow = getTimelineNWeekLow(timeline);
+  const weekBracket = getWeekBracket(nWeekLow);
 
   return {
     keyword,
     timeline,
-    nWeekLow: keywordNWeekLow,
-    breakpointWeeks,
+    nWeekLow,
+    weekBracket,
   };
 }
 
@@ -72,4 +70,26 @@ function mapGoogleTrendsTimelineData({
     value: Array.isArray(value) ? value[0] : 0,
     date: mapGoogleTrendsTimeString(time),
   };
+}
+
+function getWeekBracket(nWeekLow: number): WeekBracket {
+  const possibleLowerBounds = ALERT_WEEK_BREAKPOINTS.filter(
+    (breakpoint) => breakpoint < nWeekLow
+  );
+  const lowerBound = possibleLowerBounds.length
+    ? Math.min(...possibleLowerBounds)
+    : 0;
+
+  const possibleUpperBounds = ALERT_WEEK_BREAKPOINTS.filter(
+    (breakpoint) => breakpoint > nWeekLow
+  );
+  const upperBound = possibleUpperBounds
+    ? Math.min(...possibleUpperBounds)
+    : Infinity;
+
+  const weekBracket = lowerBound
+    ? ([lowerBound, upperBound] as [number, number])
+    : null;
+
+  return weekBracket;
 }

@@ -21,21 +21,21 @@ export const sendWeeklyAlerts: Job = async function (context) {
       // trend for a sufficient amount of time.
       // Bear minimum, nWeekLow has to surpass the
       // minimum alert week breakpoint.
-      if (!audit.breakpointWeeks) continue;
+      if (!audit.weekBracket) continue;
 
-      const startDate = sub(new Date(), { weeks: audit.breakpointWeeks });
+      // Avoid sending alert if an alert for the same keyword
+      // and in the same week bracket was sent in the past month
+      const startDate = sub(new Date(), { months: 1 });
       const isDuplicateAlert =
         (
           await db
             .collection("alerts")
             .where("keyword", "==", audit.keyword)
             .where("createdAt", ">", startDate)
+            .where("nWeekLow", ">=", audit.nWeekLow)
             .get()
         ).size > 0;
 
-      // Keyword must not cause two alerts in between the same
-      // two breakpoints. For instance, the same keyword shouldn't
-      // send two seperate alerts for nWeekLow=22 and nWeekLow=23
       if (isDuplicateAlert) continue;
 
       alertAudits.push(audit);
