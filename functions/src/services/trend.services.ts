@@ -4,12 +4,8 @@ import {
   Options,
   GoogleTrendsTimelineData,
 } from "google-trends-api";
-import { ALERT_WEEK_BREAKPOINTS } from "../constants";
-import {
-  KeywordAudit,
-  KeywordPopularity,
-  WeekBracket,
-} from "../types/trend.types";
+import { GOOGLE_TRENDS_MAX_WEEKS } from "../constants";
+import { KeywordAudit, KeywordPopularity } from "../types/trend.types";
 
 export async function fetchGoogleTrends(
   options: Options
@@ -20,25 +16,23 @@ export async function fetchGoogleTrends(
 
 export async function auditKeyword(
   keyword: string,
-  weeks = 105
+  weeks = GOOGLE_TRENDS_MAX_WEEKS
 ): Promise<KeywordAudit> {
   const startDate = sub(new Date(), { weeks: weeks + 1 });
   const response = await fetchGoogleTrends({ keyword, startTime: startDate });
   const timeline = response.map(mapGoogleTrendsTimelineData);
-  const nWeekLow = getTimelineNWeekLow(timeline);
-  const weekBracket = getWeekBracket(nWeekLow);
+  const nWeekLow = traceBackNWeekLow(timeline);
 
   return {
     keyword,
     timeline,
     nWeekLow,
-    weekBracket,
   };
 }
 
 // Function that returns how many weeks back you have to go
 // for the keyword to be more popular.
-export function getTimelineNWeekLow(
+export function traceBackNWeekLow(
   timeline: KeywordPopularity[],
   from?: number
 ): number {
@@ -56,8 +50,8 @@ export function getTimelineNWeekLow(
   );
 }
 
-function mapGoogleTrendsTimeString(timeString: string): Date {
-  const unixTimeStamp = +timeString;
+function unixTimestampToDate(unixTimeStamp: number | string): Date {
+  if (typeof unixTimeStamp === "string") unixTimeStamp = +unixTimeStamp;
   const unixTimeStampInMilliseconds = unixTimeStamp * 1000;
   return new Date(unixTimeStampInMilliseconds);
 }
@@ -68,28 +62,6 @@ function mapGoogleTrendsTimelineData({
 }: GoogleTrendsTimelineData): KeywordPopularity {
   return {
     value: Array.isArray(value) ? value[0] : 0,
-    date: mapGoogleTrendsTimeString(time),
+    date: unixTimestampToDate(time),
   };
-}
-
-function getWeekBracket(nWeekLow: number): WeekBracket {
-  const possibleLowerBounds = ALERT_WEEK_BREAKPOINTS.filter(
-    (breakpoint) => breakpoint < nWeekLow
-  );
-  const lowerBound = possibleLowerBounds.length
-    ? Math.min(...possibleLowerBounds)
-    : 0;
-
-  const possibleUpperBounds = ALERT_WEEK_BREAKPOINTS.filter(
-    (breakpoint) => breakpoint > nWeekLow
-  );
-  const upperBound = possibleUpperBounds
-    ? Math.min(...possibleUpperBounds)
-    : Infinity;
-
-  const weekBracket = lowerBound
-    ? ([lowerBound, upperBound] as [number, number])
-    : null;
-
-  return weekBracket;
 }

@@ -1,5 +1,5 @@
 import sub from "date-fns/sub";
-import { ALERT_KEYWORDS, ALERT_WEEK_BREAKPOINTS } from "../constants";
+import { ALERT_KEYWORDS, MIN_ALERT_WEEK_LOW } from "../constants";
 import db from "../db";
 import { auditKeyword } from "../services";
 import { sendAlerts } from "../services/alert.services";
@@ -9,19 +9,12 @@ import { Job, KeywordAudit } from "../types";
 // in crypto and conditionally sends alerts to users.
 export const sendWeeklyAlerts: Job = async function (context) {
   try {
-    const maxWeeks = Math.max(...ALERT_WEEK_BREAKPOINTS) + 1;
-    const promises = ALERT_KEYWORDS.map((keyword) =>
-      auditKeyword(keyword, maxWeeks)
-    );
+    const promises = ALERT_KEYWORDS.map((keyword) => auditKeyword(keyword));
     const keywordAudits = await Promise.all(promises);
     const alertAudits: KeywordAudit[] = [];
 
     for (const audit of keywordAudits) {
-      // Keyword's popularity has to be at a downward
-      // trend for a sufficient amount of time.
-      // Bear minimum, nWeekLow has to surpass the
-      // minimum alert week breakpoint.
-      if (!audit.weekBracket) continue;
+      if (audit.nWeekLow < MIN_ALERT_WEEK_LOW) continue;
 
       // Avoid sending alert if an alert for the same keyword
       // and in the same week bracket was sent in the past month
