@@ -25,14 +25,14 @@ export const sendWeeklyAlerts: Job = async function (context) {
 
       // Avoid sending alert if an alert for the same keyword
       // and in the same week bracket was sent in the past month
-      const startDate = sub(new Date(), { months: 1 });
+      const startDate = sub(new Date(), { weeks: 4 });
       const isDuplicateAlert =
         (
           await db
             .collection("alerts")
             .where("keyword", "==", audit.keyword)
             .where("createdAt", ">", startDate)
-            .where("nWeekLow", ">=", audit.nWeekLow)
+            .where("nWeekLow", ">=", audit.nWeekLow - 6)
             .get()
         ).size > 0;
 
