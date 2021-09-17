@@ -1,4 +1,4 @@
-import { auditKeyword, getTimelineNWeekLow } from "../services";
+import { auditKeyword } from "../services";
 import { Controller } from "../types";
 
 export const getNWeekLow: Controller = async function (req, res) {
