@@ -27,6 +27,13 @@ export async function fetchKeywordPopularityTimeline(
     weeks = GOOGLE_TRENDS_MAX_WEEKS,
   }: FetchKeywordPopularityTimelineOptions = {}
 ): Promise<KeywordPopularity[]> {
+  if (weeks <= 0)
+    throw new Error(
+      "fetchKeywordPopularityTimeline expected a positive integer for weeks"
+    );
+
+  weeks = Math.floor(weeks);
+
   // Fetching google trends data in chunks with overlap.
   const promises: Promise<GoogleTrendsTimelineData[]>[] = [];
   const overlap = Math.floor(GOOGLE_TRENDS_MAX_WEEKS / 2);
@@ -40,6 +47,8 @@ export async function fetchKeywordPopularityTimeline(
     weeksAgo += overlap;
   }
   const googleTrendsTimelines = await Promise.all(promises);
+
+  // Mapping and reversing results
   const unzippedTimelines: KeywordPopularity[][] = googleTrendsTimelines
     .map((googleTrendsTimelineData) =>
       googleTrendsTimelineData.map(mapGoogleTrendsTimelineData)
@@ -49,6 +58,7 @@ export async function fetchKeywordPopularityTimeline(
   if (unzippedTimelines.some((timeline) => timeline.length != overlap * 2))
     throw new Error("Unzipped Timelines have unexpected lengths");
 
+  // Zipping results into one timeline
   const zippedTimeline: KeywordPopularity[] = new Array(
     overlap * unzippedTimelines.length + overlap
   ).fill(null);
@@ -89,9 +99,7 @@ export async function auditKeyword(
   keyword: string,
   weeks = GOOGLE_TRENDS_MAX_WEEKS
 ): Promise<KeywordAudit> {
-  const startDate = sub(new Date(), { weeks: weeks + 1 });
-  const response = await fetchGoogleTrends({ keyword, startTime: startDate });
-  const timeline = response.map(mapGoogleTrendsTimelineData);
+  const timeline = await fetchKeywordPopularityTimeline(keyword, { weeks });
   const nWeekLow = traceBackNWeekLow(timeline);
 
   return {
