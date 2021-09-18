@@ -61,16 +61,15 @@ export async function fetchKeywordPopularityTimeline(
     timelineIndex--
   ) {
     const timeline = unzippedTimelines[timelineIndex];
-    const zippedStartIndex =
-      zippedTimeline.length - 1 - timelineIndex * overlap;
+    const zippedStartIndex = (timelineIndex + 2) * overlap - 1;
     const currOverlapSum = timeline.reduce(
       (acc, curr, i) => (i >= overlap ? acc + curr.value : acc),
       0
     );
     weight *= prevOverlapSum ? prevOverlapSum / currOverlapSum : 1;
-    for (let i = timeline.length - 1; i >= overlap; i--) {
+    for (let i = 0; i < overlap; i++) {
       zippedTimeline[zippedStartIndex - i] = {
-        ...timeline[i],
+        ...timeline[timeline.length - 1 - i],
         value: timeline[i].value * weight,
       };
     }
@@ -83,10 +82,8 @@ export async function fetchKeywordPopularityTimeline(
       value: unzippedTimelines[0][i].value * weight,
     };
   }
-  return zippedTimeline;
+  return zippedTimeline.slice(zippedTimeline.length - weeks);
 }
-
-// fetchKeywordPopularityTimeline("bitcoin", { weeks: 400 }).then(console.log);
 
 export async function auditKeyword(
   keyword: string,
