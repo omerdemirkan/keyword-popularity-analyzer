@@ -22,11 +22,14 @@ export async function fetchKeywordPopularityTimeline(
   keyword: string,
   {
     weeks = GOOGLE_TRENDS_MAX_WEEKS,
+    // Buffer of extra weeks of popularity to
+    // more accurately determine popularity lows and highs.
+    trendWeekClearance = 104,
   }: FetchKeywordPopularityTimelineOptions = {}
 ): Promise<KeywordPopularity[]> {
-  if (weeks <= 0)
+  if (weeks <= 0 || trendWeekClearance < 0)
     throw new Error(
-      "fetchKeywordPopularityTimeline expected a positive integer for weeks."
+      "invalid options passed into fetchKeywordPopularityTimeline"
     );
 
   weeks = Math.floor(weeks);
@@ -38,14 +41,30 @@ export async function fetchKeywordPopularityTimeline(
   const unzippedTimelines = await fetchUnzippedTimelines({
     keyword,
     overlap,
-    weeks,
+    weeks: weeks + trendWeekClearance,
   });
   const zippedTimeline = zipRelativeTimelines(unzippedTimelines);
   populateKeywordTrends(zippedTimeline);
   return zippedTimeline.slice(zippedTimeline.length - weeks);
 }
 
-// fetchKeywordPopularityTimeline("bitcoin", { weeks: 260 }).then(console.log);
+export async function auditKeyword(
+  keyword: string,
+  weeks = GOOGLE_TRENDS_MAX_WEEKS
+): Promise<KeywordAudit> {
+  const timeline = await fetchKeywordPopularityTimeline(keyword, {
+    weeks: weeks,
+    trendWeekClearance: 104,
+  });
+  const trimmedTimeline = timeline.slice(timeline.length - weeks);
+  const latestPopularity = trimmedTimeline[trimmedTimeline.length - 1];
+  return {
+    keyword,
+    nWeekLow: latestPopularity.nWeekLow as number,
+    nWeekHigh: latestPopularity.nWeekHigh as number,
+    timeline: trimmedTimeline,
+  };
+}
 
 async function fetchUnzippedTimelines({
   weeks,
@@ -180,24 +199,6 @@ function populateKeywordTrends(timeline: KeywordPopularity[]): void {
   }
 }
 
-export async function auditKeyword(
-  keyword: string,
-  weeks = GOOGLE_TRENDS_MAX_WEEKS
-): Promise<KeywordAudit> {
-  const timeline = await fetchKeywordPopularityTimeline(keyword, {
-    weeks: weeks + 104,
-  });
-  const trimmedTimeline = timeline.slice(timeline.length - weeks);
-  const latestPopularity = trimmedTimeline[trimmedTimeline.length - 1];
-  return {
-    keyword,
-    // Getting current nWeekLow
-    nWeekLow: latestPopularity.nWeekLow as number,
-    nWeekHigh: latestPopularity.nWeekHigh as number,
-    timeline: trimmedTimeline,
-  };
-}
-
 function unixTimestampToDate(unixTimeStamp: number | string): Date {
   if (typeof unixTimeStamp === "string") unixTimeStamp = +unixTimeStamp;
   const unixTimeStampInMilliseconds = unixTimeStamp * 1000;
@@ -213,5 +214,3 @@ function mapGoogleTrendsTimelineData({
     date: unixTimestampToDate(time),
   };
 }
-
-// fetchKeywordPopularityTimeline("bitcoin", { weeks: 280 }).then(console.log);
