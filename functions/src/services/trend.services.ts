@@ -212,5 +212,7 @@ function mapGoogleTrendsTimelineData({
   return {
     value: Array.isArray(value) ? value[0] : 0,
     date: unixTimestampToDate(time),
+    nWeekLow: -1,
+    nWeekHigh: -1,
   };
 }
