@@ -1,10 +1,10 @@
-import { differenceInWeeks, sub } from "date-fns";
+import { differenceInWeeks, isSameISOWeek, sub } from "date-fns";
 import {
   interestOverTime,
   Options,
   GoogleTrendsTimelineData,
 } from "google-trends-api";
-import { GOOGLE_TRENDS_MAX_WEEKS } from "../constants";
+import { GOOGLE_TRENDS_MAX_WEEKS, WEEKS_IN_A_DECADE } from "../constants";
 import {
   KeywordAudit,
   KeywordPopularity,
@@ -18,9 +18,6 @@ export async function fetchGoogleTrends(
   return JSON.parse(res).default.timelineData;
 }
 
-// Since Google trends results are relative, and
-// are limited in scope (time), we can fetch individual,
-// overlapping sections and zip a final result together
 export async function fetchKeywordPopularityTimeline(
   keyword: string,
   {
@@ -29,14 +26,40 @@ export async function fetchKeywordPopularityTimeline(
 ): Promise<KeywordPopularity[]> {
   if (weeks <= 0)
     throw new Error(
-      "fetchKeywordPopularityTimeline expected a positive integer for weeks"
+      "fetchKeywordPopularityTimeline expected a positive integer for weeks."
     );
 
   weeks = Math.floor(weeks);
 
-  // Fetching google trends data in chunks with overlap.
-  const promises: Promise<GoogleTrendsTimelineData[]>[] = [];
+  // Since Google trends results are relative, and
+  // are limited in scope (time), we can fetch individual,
+  // overlapping sections and zip a final result together
   const overlap = Math.floor(GOOGLE_TRENDS_MAX_WEEKS / 2);
+  const unzippedTimelines = await fetchUnzippedTimelines({
+    keyword,
+    overlap,
+    weeks,
+  });
+
+  // [50, 100], [50, 100], [50, 100] -> [12.5, 25, 50, 100]
+  const zippedTimeline = zipRelativeTimelines(unzippedTimelines);
+
+  // Zipping results into one timeline
+  return zippedTimeline.slice(zippedTimeline.length - weeks);
+}
+
+// fetchKeywordPopularityTimeline("bitcoin", { weeks: 300 }).then(console.log);
+
+async function fetchUnzippedTimelines({
+  weeks,
+  overlap,
+  keyword,
+}: {
+  weeks: number;
+  overlap: number;
+  keyword: string;
+}): Promise<KeywordPopularity[][]> {
+  const promises: Promise<GoogleTrendsTimelineData[]>[] = [];
   let weeksAgo = 0;
   while (weeksAgo < weeks) {
     const startDate = sub(new Date(), { weeks: weeksAgo });
@@ -54,45 +77,80 @@ export async function fetchKeywordPopularityTimeline(
       googleTrendsTimelineData.map(mapGoogleTrendsTimelineData)
     )
     .reverse();
+  return unzippedTimelines;
+}
 
-  if (unzippedTimelines.some((timeline) => timeline.length != overlap * 2))
-    throw new Error("Unzipped Timelines have unexpected lengths");
-
-  // Zipping results into one timeline
-  const zippedTimeline: KeywordPopularity[] = new Array(
-    overlap * unzippedTimelines.length + overlap
-  ).fill(null);
-
+// Combining a bunch of overlapping relative timeline
+// into one timeline.
+function zipRelativeTimelines(
+  unzippedTimelines: KeywordPopularity[][]
+): KeywordPopularity[] {
+  // Sorting and filtering subset timelines.
+  unzippedTimelines = getSortedAndFilteredUnzippedTimelines(unzippedTimelines);
+  const zippedTimeline: KeywordPopularity[] = [];
   let weight = 1;
-  let prevOverlapSum = 0;
+  let nextTimelineEndIndex = -1;
   for (
     let timelineIndex = unzippedTimelines.length - 1;
     timelineIndex >= 0;
     timelineIndex--
   ) {
-    const timeline = unzippedTimelines[timelineIndex];
-    const zippedStartIndex = (timelineIndex + 2) * overlap - 1;
-    const currOverlapSum = timeline.reduce(
-      (acc, curr, i) => (i >= overlap ? acc + curr.value : acc),
-      0
-    );
-    weight *= prevOverlapSum ? prevOverlapSum / currOverlapSum : 1;
-    for (let i = 0; i < overlap; i++) {
-      zippedTimeline[zippedStartIndex - i] = {
-        ...timeline[timeline.length - 1 - i],
-        value: timeline[i].value * weight,
-      };
-    }
-    prevOverlapSum = currOverlapSum;
-  }
+    const prevTimeline =
+      timelineIndex > 0 ? unzippedTimelines[timelineIndex - 1] : null;
+    const currTimeline = unzippedTimelines[timelineIndex];
+    const nextTimeline =
+      timelineIndex < unzippedTimelines.length - 1
+        ? unzippedTimelines[timelineIndex + 1]
+        : null;
 
-  for (let i = overlap - 1; i >= 0; i--) {
-    zippedTimeline[i] = {
-      ...unzippedTimelines[0][i],
-      value: unzippedTimelines[0][i].value * weight,
-    };
+    if (nextTimeline) {
+      // Setting current iteration's weight
+      // based on previous weight and overlapping area's sums
+      let currSum = 0;
+      let nextSum = 0;
+      for (
+        let nextIndex = nextTimelineEndIndex,
+          currIndex = currTimeline.length - 1;
+        nextIndex >= 0 &&
+        isSameISOWeek(
+          nextTimeline[nextIndex].date,
+          currTimeline[currIndex].date
+        );
+        nextIndex--, currIndex--
+      ) {
+        currSum += currTimeline[currIndex].value;
+        nextSum += nextTimeline[nextIndex].value;
+      }
+      weight *= nextSum / currSum;
+    }
+
+    const stopDate = prevTimeline
+      ? prevTimeline[prevTimeline.length - 1].date
+      : new Date(0);
+    let i = currTimeline.length;
+    while (i-- && !isSameISOWeek(currTimeline[i].date, stopDate)) {
+      zippedTimeline.push({
+        ...currTimeline[i],
+        value: weight * currTimeline[i].value,
+      });
+    }
+
+    if (i === -1) break;
+
+    nextTimelineEndIndex = i;
   }
-  return zippedTimeline.slice(zippedTimeline.length - weeks);
+  zippedTimeline.reverse();
+  return zippedTimeline;
+}
+
+function getSortedAndFilteredUnzippedTimelines(
+  unzippedTimelines: KeywordPopularity[][]
+): KeywordPopularity[][] {
+  const sortedTimeline = [...unzippedTimelines].sort(
+    (a, b) => a[a.length - 1].date.getTime() - b[b.length - 1].date.getTime()
+  );
+  // TODO: filter timelines that are subsets of others
+  return sortedTimeline;
 }
 
 export async function auditKeyword(
@@ -109,18 +167,38 @@ export async function auditKeyword(
   };
 }
 
+export async function auditKeywordHistory(
+  keyword: string,
+  weeks: number = WEEKS_IN_A_DECADE
+): Promise<KeywordAudit> {
+  const timeline = await fetchKeywordPopularityTimeline(keyword, {
+    weeks: weeks + 104,
+  });
+  for (let i = 0; i < timeline.length; i++) {
+    timeline[i].nWeekLow = traceBackNWeekLow(timeline, i);
+  }
+  const trimmedTimeline = timeline.slice(timeline.length - weeks);
+  return {
+    keyword,
+    // Getting current nWeekLow
+    nWeekLow: trimmedTimeline[trimmedTimeline.length - 1].nWeekLow as number,
+    timeline: trimmedTimeline,
+  };
+}
+
 // Function that returns how many weeks back you have to go
 // for the keyword to be more popular.
 export function traceBackNWeekLow(
   timeline: KeywordPopularity[],
   from?: number
 ): number {
+  if (from && (from < 0 || from >= timeline.length))
+    throw new Error("Invalid from index");
+
   const endIndex = from || timeline.length - 1;
-  let startIndex = endIndex;
-  while (startIndex--) {
-    if (timeline[startIndex].value < timeline[endIndex].value) {
-      break;
-    }
+  let startIndex: number;
+  for (startIndex = endIndex - 1; startIndex >= 0; startIndex--) {
+    if (timeline[startIndex].value < timeline[endIndex].value) break;
   }
   startIndex += 1;
 
