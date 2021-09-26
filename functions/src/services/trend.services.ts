@@ -48,7 +48,7 @@ export async function fetchKeywordPopularityTimeline(
   return zippedTimeline.slice(zippedTimeline.length - weeks);
 }
 
-// fetchKeywordPopularityTimeline("bitcoin", { weeks: 300 }).then(console.log);
+// fetchKeywordPopularityTimeline("bitcoin", { weeks: 260 }).then(console.log);
 
 async function fetchUnzippedTimelines({
   weeks,
@@ -146,11 +146,23 @@ function zipRelativeTimelines(
 function getSortedAndFilteredUnzippedTimelines(
   unzippedTimelines: KeywordPopularity[][]
 ): KeywordPopularity[][] {
-  const sortedTimeline = [...unzippedTimelines].sort(
-    (a, b) => a[a.length - 1].date.getTime() - b[b.length - 1].date.getTime()
+  const sortedTimelines = [...unzippedTimelines].sort(
+    (a, b) => a[0].date.getTime() - b[0].date.getTime()
   );
-  // TODO: filter timelines that are subsets of others
-  return sortedTimeline;
+  const filteredTimelines: KeywordPopularity[][] = [];
+  for (const timeline of sortedTimelines) {
+    if (
+      !filteredTimelines.length ||
+      filteredTimelines[filteredTimelines.length - 1][0].date.getTime() !==
+        timeline[0].date.getTime()
+    )
+      filteredTimelines.push(timeline);
+    else if (
+      timeline.length > filteredTimelines[filteredTimelines.length - 1].length
+    )
+      filteredTimelines[filteredTimelines.length - 1] = timeline;
+  }
+  return filteredTimelines;
 }
 
 export async function auditKeyword(
