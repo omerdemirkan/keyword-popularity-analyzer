@@ -5,7 +5,7 @@ import { Job } from "../types";
 
 // job that runs weekly that checks for declining popularity
 // in crypto and conditionally sends alerts to users.
-export const sendWeeklyAlerts: Job = async function (context) {
+export const sendWeeklyAlerts: Job = async function () {
   try {
     const promises = ALERT_KEYWORDS.map((keyword) => auditKeyword(keyword));
     const keywordAudits = await Promise.all(promises);
