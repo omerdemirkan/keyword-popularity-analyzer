@@ -32,7 +32,7 @@ export async function fetchKeywordPopularityTimeline(
   weeks = Math.floor(weeks);
 
   // Since Google trends results are relative, and
-  // are limited in scope (time), we can fetch individual,
+  // are limited in time (for weekly increments), we can fetch individual,
   // overlapping sections and zip a final result together
   const overlap = Math.floor(GOOGLE_TRENDS_MAX_WEEKS / 2);
   const unzippedTimelines = await fetchUnzippedTimelines({
@@ -40,11 +40,8 @@ export async function fetchKeywordPopularityTimeline(
     overlap,
     weeks,
   });
-
-  // [50, 100], [50, 100], [50, 100] -> [12.5, 25, 50, 100]
   const zippedTimeline = zipRelativeTimelines(unzippedTimelines);
-
-  // Zipping results into one timeline
+  populateKeywordTrends(zippedTimeline);
   return zippedTimeline.slice(zippedTimeline.length - weeks);
 }
 
@@ -165,6 +162,26 @@ function getSortedAndFilteredUnzippedTimelines(
   return filteredTimelines;
 }
 
+function populateKeywordTrends(timeline: KeywordPopularity[]): void {
+  for (let i = 0; i < timeline.length; i++) {
+    let j: number;
+
+    // populating nWeekLows
+    for (j = i - 1; j >= 0; j--) {
+      if (timeline[j].value < timeline[i].value) break;
+      j -= timeline[j].nWeekLow || 0;
+    }
+    timeline[i].nWeekLow = i - j - 1;
+
+    // populating nWeekHighs
+    for (j = i - 1; j >= 0; j--) {
+      if (timeline[j].value > timeline[i].value) break;
+      j -= timeline[j].nWeekHigh || 0;
+    }
+    timeline[i].nWeekHigh = i - j - 1;
+  }
+}
+
 export async function auditKeyword(
   keyword: string,
   weeks = GOOGLE_TRENDS_MAX_WEEKS
@@ -234,3 +251,5 @@ function mapGoogleTrendsTimelineData({
     date: unixTimestampToDate(time),
   };
 }
+
+// fetchKeywordPopularityTimeline("bitcoin", { weeks: 280 }).then(console.log);
