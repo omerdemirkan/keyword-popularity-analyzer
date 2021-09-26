@@ -9,6 +9,7 @@ export interface KeywordAudit {
   keyword: string;
   timeline: KeywordPopularity[];
   nWeekLow: number;
+  nWeekHigh: number;
 }
 
 export interface FetchKeywordPopularityTimelineOptions {

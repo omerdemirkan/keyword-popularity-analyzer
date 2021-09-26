@@ -82,8 +82,8 @@ async function fetchUnzippedTimelines({
 function zipRelativeTimelines(
   unzippedTimelines: KeywordPopularity[][]
 ): KeywordPopularity[] {
-  // Sorting and filtering subset timelines.
   unzippedTimelines = getSortedAndFilteredUnzippedTimelines(unzippedTimelines);
+
   const zippedTimeline: KeywordPopularity[] = [];
   let weight = 1;
   let nextTimelineEndIndex = -1;
@@ -186,54 +186,18 @@ export async function auditKeyword(
   keyword: string,
   weeks = GOOGLE_TRENDS_MAX_WEEKS
 ): Promise<KeywordAudit> {
-  const timeline = await fetchKeywordPopularityTimeline(keyword, { weeks });
-  const nWeekLow = traceBackNWeekLow(timeline);
-
-  return {
-    keyword,
-    timeline,
-    nWeekLow,
-  };
-}
-
-export async function auditKeywordHistory(
-  keyword: string,
-  weeks: number = WEEKS_IN_A_DECADE
-): Promise<KeywordAudit> {
   const timeline = await fetchKeywordPopularityTimeline(keyword, {
     weeks: weeks + 104,
   });
-  for (let i = 0; i < timeline.length; i++) {
-    timeline[i].nWeekLow = traceBackNWeekLow(timeline, i);
-  }
   const trimmedTimeline = timeline.slice(timeline.length - weeks);
+  const latestPopularity = trimmedTimeline[trimmedTimeline.length - 1];
   return {
     keyword,
     // Getting current nWeekLow
-    nWeekLow: trimmedTimeline[trimmedTimeline.length - 1].nWeekLow as number,
+    nWeekLow: latestPopularity.nWeekLow as number,
+    nWeekHigh: latestPopularity.nWeekHigh as number,
     timeline: trimmedTimeline,
   };
-}
-
-// Function that returns how many weeks back you have to go
-// for the keyword to be more popular.
-export function traceBackNWeekLow(
-  timeline: KeywordPopularity[],
-  from?: number
-): number {
-  if (from && (from < 0 || from >= timeline.length))
-    throw new Error("Invalid from index");
-
-  const endIndex = from || timeline.length - 1;
-  let startIndex: number;
-  for (startIndex = endIndex - 1; startIndex >= 0; startIndex--) {
-    if (timeline[startIndex].value < timeline[endIndex].value) break;
-  }
-  startIndex += 1;
-
-  return Math.abs(
-    differenceInWeeks(timeline[startIndex].date, timeline[endIndex].date)
-  );
 }
 
 function unixTimestampToDate(unixTimeStamp: number | string): Date {
