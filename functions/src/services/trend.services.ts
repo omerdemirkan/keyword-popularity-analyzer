@@ -1,10 +1,10 @@
-import { differenceInWeeks, isSameISOWeek, sub } from "date-fns";
+import { sub } from "date-fns";
 import {
   interestOverTime,
   Options,
   GoogleTrendsTimelineData,
 } from "google-trends-api";
-import { GOOGLE_TRENDS_MAX_WEEKS, WEEKS_IN_A_DECADE } from "../constants";
+import { GOOGLE_TRENDS_MAX_WEEKS } from "../constants";
 import {
   KeywordAudit,
   KeywordPopularity,
@@ -109,10 +109,8 @@ function zipRelativeTimelines(
         let nextIndex = nextTimelineEndIndex,
           currIndex = currTimeline.length - 1;
         nextIndex >= 0 &&
-        isSameISOWeek(
-          nextTimeline[nextIndex].date,
-          currTimeline[currIndex].date
-        );
+        nextTimeline[nextIndex].date.getTime() ===
+          currTimeline[currIndex].date.getTime();
         nextIndex--, currIndex--
       ) {
         currSum += currTimeline[currIndex].value;
@@ -125,7 +123,7 @@ function zipRelativeTimelines(
       ? prevTimeline[prevTimeline.length - 1].date
       : new Date(0);
     let i = currTimeline.length;
-    while (i-- && !isSameISOWeek(currTimeline[i].date, stopDate)) {
+    while (i-- && currTimeline[i].date.getTime() !== stopDate.getTime()) {
       zippedTimeline.push({
         ...currTimeline[i],
         value: weight * currTimeline[i].value,
@@ -216,4 +214,4 @@ function mapGoogleTrendsTimelineData({
   };
 }
 
-// fetchKeywordPopularityTimeline("bitcoin", { weeks: 280 }).then(console.log);
+fetchKeywordPopularityTimeline("bitcoin", { weeks: 280 }).then(console.log);
