@@ -214,4 +214,4 @@ function mapGoogleTrendsTimelineData({
   };
 }
 
-fetchKeywordPopularityTimeline("bitcoin", { weeks: 280 }).then(console.log);
+// fetchKeywordPopularityTimeline("bitcoin", { weeks: 280 }).then(console.log);
