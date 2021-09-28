@@ -3,10 +3,19 @@ import Chart from "../components/ui/Chart";
 import { sub } from "date-fns";
 import { ChartPoint } from "../components/types";
 
-const chartPoints: ChartPoint[] = new Array(20).fill(null).map((val, i) => ({
-  value: Math.random() * 100,
-  date: sub(new Date(), { weeks: 19 - i }),
-}));
+const numElements = 1000;
+const now = new Date();
+const chartPoints: ChartPoint[] = [
+  { date: sub(now, { weeks: numElements - 1 }), value: 0 },
+];
+for (let i = 1; i < numElements; i++) {
+  chartPoints.push({
+    value:
+      chartPoints[chartPoints.length - 1].value +
+      (Math.random() >= 0.5 ? 1 : -1) * (Math.pow(Math.random(), 2) * 12),
+    date: sub(now, { weeks: numElements - 1 - i }),
+  });
+}
 
 export default function Home() {
   return (
