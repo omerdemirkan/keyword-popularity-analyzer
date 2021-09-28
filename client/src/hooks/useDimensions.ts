@@ -1,4 +1,9 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import React, {
+  MutableRefObject,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 
 interface Dimensions {
   bottom: number;
@@ -12,10 +17,10 @@ interface Dimensions {
 }
 
 export default function useDimensions<T extends HTMLElement>(): [
-  any,
+  MutableRefObject<T | null>,
   Dimensions
 ] {
-  const ref = useRef<T>();
+  const ref = useRef<T>(null);
   const [dimensions, setDimensions] = useState<Dimensions>({} as Dimensions);
 
   useLayoutEffect(function () {

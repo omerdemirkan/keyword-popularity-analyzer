@@ -19,7 +19,7 @@ for (let i = 1; i < numElements; i++) {
 
 export default function Home() {
   return (
-    <div>
+    <div className="flex justify-center items-center">
       <Head>
         <title>Remind Me About Bitcoin</title>
       </Head>
