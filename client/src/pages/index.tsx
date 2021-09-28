@@ -1,7 +1,7 @@
 import Head from "next/head";
-import Chart from "../components/ui/Chart";
+import LineChart from "../components/ui/LineChart";
 import { sub } from "date-fns";
-import { ChartPoint } from "../components/types";
+import { ChartPoint } from "../utils/types";
 
 const numElements = 1000;
 const now = new Date();
@@ -23,7 +23,7 @@ export default function Home() {
       <Head>
         <title>Remind Me About Bitcoin</title>
       </Head>
-      <Chart points={chartPoints} />
+      <LineChart points={chartPoints} />
     </div>
   );
 }
