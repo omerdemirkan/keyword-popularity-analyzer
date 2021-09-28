@@ -4,37 +4,37 @@ import { ChartPoint } from "../types";
 
 export interface PriceChartProps {
   points: ChartPoint[];
-  upperBound?: number;
-  lowerBound?: number;
   startDate?: Date;
   endDate?: Date;
+  height?: number;
 }
 
 const Chart: React.FC<PriceChartProps> = ({
   points,
-  upperBound = Math.max(...points.map((point) => point.value)),
-  lowerBound = Math.min(...points.map((point) => point.value)),
   startDate = points[0].date,
   endDate = points[points.length - 1].date,
+  height = 400,
 }) => {
-  const timeRangeInMilliseconds = differenceInMilliseconds(startDate, endDate);
+  const upperBound = Math.max(...points.map((point) => point.value));
+  const lowerBound = Math.min(...points.map((point) => point.value));
+  const valueRange = upperBound - lowerBound;
+  const msRange = differenceInMilliseconds(endDate, startDate);
+  const width = 400;
   return (
-    <div className="w-36 h-36 bg-gray-100 relative">
-      {points.map(({ value, date }) => (
-        <span
-          key={value + date.toString()}
-          className="absolute w-1 h-1 bg-green-700 rounded"
-          style={{
-            left:
-              100 *
-                (differenceInMilliseconds(startDate, date) /
-                  timeRangeInMilliseconds) +
-              "%",
-            top: 100 * ((upperBound - value) / (upperBound - lowerBound)) + "%",
-            transform: "translateX(-50%)",
-          }}
-        ></span>
-      ))}
+    <div>
+      <svg height={`${height}px`} width="">
+        <polyline
+          style={{ fill: "none", stroke: "green", strokeWidth: "2px" }}
+          points={points
+            .map(
+              ({ value, date }) =>
+                `${
+                  (width * differenceInMilliseconds(date, startDate)) / msRange
+                },${height * ((upperBound - value) / valueRange)}`
+            )
+            .join(" ")}
+        />
+      </svg>
     </div>
   );
 };
