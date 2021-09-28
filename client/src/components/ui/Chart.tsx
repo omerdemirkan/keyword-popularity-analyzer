@@ -5,11 +5,10 @@ import { ChartPoint } from "../types";
 
 export interface PriceChartProps {
   points: ChartPoint[];
-  height?: number;
   style?: React.CSSProperties;
 }
 
-const Chart: React.FC<PriceChartProps> = ({ points, height = 400, style }) => {
+const Chart: React.FC<PriceChartProps> = ({ points, style }) => {
   const [containerRef, containerDimensions] = useDimensions();
 
   const { min: lowerBound, max: upperBound } = findPointExtremes(points);
@@ -25,7 +24,7 @@ const Chart: React.FC<PriceChartProps> = ({ points, height = 400, style }) => {
     <div
       ref={containerRef}
       style={{
-        height,
+        height: 400,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",

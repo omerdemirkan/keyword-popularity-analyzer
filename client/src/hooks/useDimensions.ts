@@ -22,11 +22,12 @@ export default function useDimensions<T extends HTMLElement>(): [
     if (!ref.current) return;
     handleUpdateDimensions();
     const resizeObserver = new ResizeObserver(handleUpdateDimensions);
-    resizeObserver.observe(ref.current);
+    const element = ref.current;
+    resizeObserver.observe(element);
+    return () => resizeObserver.unobserve(element);
   }, []);
 
   function handleUpdateDimensions() {
-    console.log("updating dimensions");
     setDimensions(ref.current?.getBoundingClientRect().toJSON());
   }
   return [ref, dimensions];
