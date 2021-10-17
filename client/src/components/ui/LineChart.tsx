@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import useDimensions from "../../hooks/useDimensions";
+import { getPointExtremes } from "../../utils/helpers";
 import { ChartPoint } from "../../utils/types";
+import LineChartCursor from "./LineChartCursor";
 import LineChartSVG from "./LineChartSVG";
 
 export interface LineChartProps {
@@ -12,6 +14,10 @@ const LineChart: React.FC<LineChartProps> = ({ points, style }) => {
   const [containerRef, containerDimensions] = useDimensions<HTMLDivElement>();
   const [isHovering, setIsHovering] = useState<boolean>(false);
   const [hoverIndex, setHoverIndex] = useState<number>(0);
+  const [bounds, setBounds] = useState<{ upper: number; lower: number }>({
+    upper: 0,
+    lower: 0,
+  });
 
   useEffect(
     function () {
@@ -24,9 +30,19 @@ const LineChart: React.FC<LineChartProps> = ({ points, style }) => {
     [isHovering]
   );
 
+  useEffect(
+    function () {
+      const { min, max } = getPointExtremes(points);
+
+      setBounds((prev) => ({ ...prev, lower: min, upper: max }));
+    },
+    [points]
+  );
+
   function handleMouseMoved(event: MouseEvent) {
+    const relativeX = event.x - containerDimensions.x;
     let newHoverIndex = Math.round(
-      (event.offsetX / containerDimensions.width) * points.length
+      (relativeX / containerDimensions.width) * points.length
     );
     if (newHoverIndex < 0) newHoverIndex = 0;
     else if (newHoverIndex >= points.length) newHoverIndex = points.length - 1;
@@ -52,6 +68,17 @@ const LineChart: React.FC<LineChartProps> = ({ points, style }) => {
           points={points}
           chartHeight={containerDimensions.height}
           chartWidth={containerDimensions.width}
+          lowerBound={bounds.lower}
+          upperBound={bounds.upper}
+        />
+        <LineChartCursor
+          points={points}
+          hoverIndex={hoverIndex}
+          isHovering={isHovering}
+          lowerBound={bounds.lower}
+          upperBound={bounds.upper}
+          startDate={points[0].date}
+          endDate={points[points.length - 1].date}
         />
       </div>
     </div>
