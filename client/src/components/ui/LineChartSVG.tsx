@@ -6,16 +6,25 @@ interface LineChartSVGProps {
   points: ChartPoint[];
   chartWidth: number;
   chartHeight: number;
+  lowerBound: number;
+  upperBound: number;
+
+  // Numbers instead of dates for memoization (performance)
+  startMs?: number;
+  endMs?: number;
 }
 
 const LineChartSVG: React.FC<LineChartSVGProps> = ({
   points,
   chartWidth,
   chartHeight,
+  lowerBound,
+  upperBound,
+  startMs = points[0].date.getTime(),
+  endMs = points[points.length - 1].date.getTime(),
 }) => {
-  const { min: lowerBound, max: upperBound } = getPointExtremes(points);
-  const startDate = points[0].date;
-  const endDate = points[points.length - 1].date;
+  const startDate = new Date(startMs);
+  const endDate = new Date(endMs);
 
   const valueRange = upperBound - lowerBound;
   const msRange = differenceInMilliseconds(endDate, startDate);
@@ -25,10 +34,9 @@ const LineChartSVG: React.FC<LineChartSVGProps> = ({
       <polyline
         style={{
           fill: "none",
-          stroke: "green",
-          strokeWidth: "2px",
           strokeLinejoin: "round",
         }}
+        className="stroke-current text-primary-600 stroke-2"
         points={points
           .map(
             ({ value, date }) =>
@@ -43,13 +51,3 @@ const LineChartSVG: React.FC<LineChartSVGProps> = ({
   );
 };
 export default memo(LineChartSVG);
-
-function getPointExtremes(points: ChartPoint[]): { max: number; min: number } {
-  let max = Number.MIN_VALUE;
-  let min = Number.MAX_VALUE;
-  for (let i = 0; i < points.length; i++) {
-    if (points[i].value < min) min = points[i].value;
-    if (points[i].value > max) max = points[i].value;
-  }
-  return { min, max };
-}

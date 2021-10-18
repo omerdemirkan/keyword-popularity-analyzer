@@ -2,6 +2,8 @@ import Head from "next/head";
 import LineChart from "../components/ui/LineChart";
 import { sub } from "date-fns";
 import { ChartPoint } from "../utils/types";
+import { useEffect, useState } from "react";
+import { fetchCryptoChart } from "../utils/services/price.services";
 
 const numElements = 1000;
 const now = new Date();
@@ -18,12 +20,27 @@ for (let i = 1; i < numElements; i++) {
 }
 
 export default function Home() {
+  const [bitcoinChart, setBitcoinChart] = useState<ChartPoint[]>([]);
+
+  useEffect(function () {
+    initChart();
+  }, []);
+
+  async function initChart() {
+    setBitcoinChart(await fetchCryptoChart("bitcoin", "usd", 730));
+  }
+
   return (
     <div className="flex justify-center items-center">
       <Head>
         <title>Remind Me About Bitcoin</title>
       </Head>
-      <LineChart points={chartPoints} />
+      <LineChart
+        points={bitcoinChart}
+        displayValue={(value) =>
+          `$${value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`
+        }
+      />
     </div>
   );
 }

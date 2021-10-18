@@ -8,9 +8,14 @@ import LineChartSVG from "./LineChartSVG";
 export interface LineChartProps {
   style?: React.CSSProperties;
   points: ChartPoint[];
+  displayValue?(value: number): string;
 }
 
-const LineChart: React.FC<LineChartProps> = ({ points, style }) => {
+const LineChart: React.FC<LineChartProps> = ({
+  points,
+  style,
+  displayValue = defaultDisplayValue,
+}) => {
   const [containerRef, containerDimensions] = useDimensions<HTMLDivElement>();
   const [isHovering, setIsHovering] = useState<boolean>(false);
   const [hoverIndex, setHoverIndex] = useState<number>(0);
@@ -53,9 +58,11 @@ const LineChart: React.FC<LineChartProps> = ({ points, style }) => {
   return (
     <div className="w-full max-w-xl">
       <h1 className="text-2xl">
-        {isHovering
-          ? points[hoverIndex].value.toFixed(2)
-          : points[points.length - 1].value.toFixed(2)}
+        {displayValue(
+          isHovering
+            ? points[hoverIndex].value
+            : points[points.length - 1].value
+        )}
       </h1>
       <div
         ref={containerRef}
@@ -87,3 +94,7 @@ const LineChart: React.FC<LineChartProps> = ({ points, style }) => {
 
 // export default memo(ChartLine);
 export default LineChart;
+
+function defaultDisplayValue(value: number) {
+  return value.toFixed(2);
+}
