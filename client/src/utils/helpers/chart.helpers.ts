@@ -12,3 +12,7 @@ export function getPointExtremes(points: ChartPoint[]): {
   }
   return { min, max };
 }
+
+export function getDisplayPrice(price: number, currency: string = "$"): string {
+  return `${currency}${price.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+}
