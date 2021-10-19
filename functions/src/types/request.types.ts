@@ -1,6 +1,6 @@
-import { Request, Response } from "firebase-functions";
+import { CallableContext } from "firebase-functions/lib/providers/https";
 
-export type Controller = (
-  request: Request,
-  response: Response
-) => void | Promise<void>;
+export type Controller<Data, ReturnValue> = (
+  data: Data,
+  response?: CallableContext
+) => ReturnValue;

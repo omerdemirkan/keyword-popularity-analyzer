@@ -93,7 +93,7 @@ async function fetchUnzippedTimelines({
       googleTrendsTimelineData.map(mapGoogleTrendsTimelineData)
     )
     .reverse();
-  return unzippedTimelines;
+  return unzippedTimelines.filter((timeline) => timeline.length > 0);
 }
 
 // Combining a bunch of overlapping relative timeline

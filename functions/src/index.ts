@@ -3,8 +3,7 @@ import * as controllers from "./controllers";
 import * as jobs from "./jobs";
 
 // Endpoints
-export const getTrends = functions.https.onRequest(controllers.getTrends);
-export const getNWeekLow = functions.https.onRequest(controllers.getNWeekLow);
+export const getTrends = functions.https.onCall(controllers.getTrends);
 
 // Jobs
 export const sendAlerts = functions.pubsub

@@ -1,6 +1,5 @@
 import { ALERT_KEYWORDS, MIN_ALERT_WEEK_LOW } from "../constants";
 import { auditKeyword } from "../services";
-import { sendAlerts } from "../services/alert.services";
 import { Job } from "../types";
 
 // job that runs weekly that checks for declining popularity
@@ -12,7 +11,8 @@ export const sendWeeklyAlerts: Job = async function () {
     const alertAudits = keywordAudits.filter(
       (audit) => audit.nWeekLow >= MIN_ALERT_WEEK_LOW
     );
-    await sendAlerts(alertAudits);
+    // todo: Send alerts
+    console.log(alertAudits);
   } catch (error) {
     console.log(error);
   }
