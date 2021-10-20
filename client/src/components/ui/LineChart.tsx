@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import useDimensions from "../../hooks/useDimensions";
 import { getPointExtremes } from "../../utils/helpers";
 import { ChartPoint } from "../../utils/types";
@@ -19,10 +19,7 @@ const LineChart: React.FC<LineChartProps> = ({
   const [containerRef, containerDimensions] = useDimensions<HTMLDivElement>();
   const [isHovering, setIsHovering] = useState<boolean>(false);
   const [hoverIndex, setHoverIndex] = useState<number>(0);
-  const [bounds, setBounds] = useState<{ upper: number; lower: number }>({
-    upper: 0,
-    lower: 0,
-  });
+  const bounds = useMemo(() => getPointExtremes(points), [points]);
 
   useEffect(
     function () {
@@ -33,15 +30,6 @@ const LineChart: React.FC<LineChartProps> = ({
         containerElement.removeEventListener("mousemove", handleMouseMoved);
     },
     [isHovering]
-  );
-
-  useEffect(
-    function () {
-      const { min, max } = getPointExtremes(points);
-
-      setBounds((prev) => ({ ...prev, lower: min, upper: max }));
-    },
-    [points]
   );
 
   function handleMouseMoved(event: MouseEvent) {
@@ -75,15 +63,15 @@ const LineChart: React.FC<LineChartProps> = ({
           points={points}
           chartHeight={containerDimensions.height}
           chartWidth={containerDimensions.width}
-          lowerBound={bounds.lower}
-          upperBound={bounds.upper}
+          lowerBound={bounds.min}
+          upperBound={bounds.max}
         />
         <LineChartCursor
           points={points}
           hoverIndex={hoverIndex}
           isHovering={isHovering}
-          lowerBound={bounds.lower}
-          upperBound={bounds.upper}
+          lowerBound={bounds.min}
+          upperBound={bounds.max}
           startDate={points[0].date}
           endDate={points[points.length - 1].date}
         />

@@ -8,7 +8,6 @@ export async function fetchKeywordPopularityChart(
   weeks: number
 ): Promise<ChartPoint[]> {
   const keywordAudit = await getTrends({ keyword, weeks });
-  console.log(keywordAudit);
   // @ts-ignore
   return keywordAudit.data.timeline.map((timelineData) => ({
     ...timelineData,

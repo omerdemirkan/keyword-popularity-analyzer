@@ -4,29 +4,38 @@ import { ChartPoint } from "../utils/types";
 import { useEffect, useState } from "react";
 import { fetchCryptoChart } from "../utils/services/price.services";
 import { getDisplayPrice } from "../utils/helpers";
-// import { fetchKeywordPopularityChart } from "../utils/services/popularity.services";
+import { fetchKeywordPopularityChart } from "../utils/services/popularity.services";
 
 export default function Home() {
   const [priceChart, setPriceChart] = useState<ChartPoint[]>([]);
-  // const [popularityChart, setPopularityChart] = useState<ChartPoint[]>([]);
+  const [popularityChart, setPopularityChart] = useState<ChartPoint[]>([]);
 
   useEffect(function () {
-    initCharts();
+    initPopularityChart();
+    initPriceChart();
   }, []);
 
-  async function initCharts() {
-    setPriceChart(await fetchCryptoChart("bitcoin", "usd", 104 * 7));
-    // setPopularityChart(await fetchKeywordPopularityChart("bitcoin price", 104));
+  async function initPopularityChart() {
+    setPopularityChart(await fetchKeywordPopularityChart("bitcoin price", 208));
+  }
+
+  async function initPriceChart() {
+    setPriceChart(await fetchCryptoChart("bitcoin", "usd", 208 * 7));
   }
 
   return (
-    <div className="flex justify-center items-center">
+    <div>
       <Head>
         <title>Remind Me About Bitcoin</title>
       </Head>
-      {priceChart.length ? (
-        <LineChart points={priceChart} displayValue={getDisplayPrice} />
-      ) : null}
+      <div className="flex justify-center items-center">
+        {priceChart.length ? (
+          <LineChart points={priceChart} displayValue={getDisplayPrice} />
+        ) : null}
+      </div>
+      <div className="flex justify-center items-center">
+        {popularityChart.length ? <LineChart points={popularityChart} /> : null}
+      </div>
     </div>
   );
 }
