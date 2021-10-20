@@ -1,5 +1,6 @@
 export interface KeywordPopularity {
   date: Date;
+  timestamp: number;
   value: number;
   nWeekLow: number;
   nWeekHigh: number;
