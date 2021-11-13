@@ -4,6 +4,9 @@ import * as jobs from "./jobs";
 
 // Endpoints
 export const getTrends = functions.https.onCall(controllers.getTrends);
+export const createSubscription = functions.https.onCall(
+  controllers.createSubscription
+);
 
 // Jobs
 export const sendAlerts = functions.pubsub
