@@ -8,6 +8,7 @@ import { fetchKeywordPopularityChart } from "../utils/services/popularity.servic
 import { useForm } from "react-hook-form";
 import { emailRegex } from "../utils/helpers/validation.helpers";
 import { createSubscription } from "../utils/services/subscription.services";
+import HeroAnimation from "../components/animations/HeroAnimation";
 
 export default function Home() {
   const [priceChart, setPriceChart] = useState<ChartPoint[]>([]);
@@ -36,6 +37,9 @@ export default function Home() {
       <Head>
         <title>Remind Me About Bitcoin</title>
       </Head>
+      <div>
+        <HeroAnimation />
+      </div>
       <div className="flex justify-center items-center">
         {priceChart.length ? (
           <LineChart points={priceChart} displayValue={getDisplayPrice} />
