@@ -44,7 +44,7 @@ const LineChart: React.FC<LineChartProps> = ({
   }
 
   return (
-    <div className="w-full max-w-xl">
+    <div className="w-full">
       <h1 className="text-2xl">
         {displayValue(
           isHovering

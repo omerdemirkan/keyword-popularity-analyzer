@@ -36,7 +36,7 @@ const LineChartSVG: React.FC<LineChartSVGProps> = ({
           fill: "none",
           strokeLinejoin: "round",
         }}
-        className="stroke-current text-primary-600 stroke-2"
+        className="stroke-current text-primary-700 stroke-2"
         points={points
           .map(
             ({ value, date }) =>

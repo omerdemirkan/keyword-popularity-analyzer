@@ -21,11 +21,11 @@ export default function Home() {
   }, []);
 
   async function initPopularityChart() {
-    setPopularityChart(await fetchKeywordPopularityChart("bitcoin price", 208));
+    setPopularityChart(await fetchKeywordPopularityChart("bitcoin price", 416));
   }
 
   async function initPriceChart() {
-    setPriceChart(await fetchCryptoChart("bitcoin", "usd", 208 * 7));
+    setPriceChart(await fetchCryptoChart("bitcoin", "usd", 416 * 7));
   }
 
   async function handleSubscribe(subscription: Subscription) {
@@ -37,15 +37,16 @@ export default function Home() {
       <Head>
         <title>Remind Me About Bitcoin</title>
       </Head>
-      <div>
+
+      <div className="flex justify-center items-center min-h-screen">
         <HeroAnimation />
       </div>
-      <div className="flex justify-center items-center">
+      <div className="flex justify-center items-center max-w-5xl m-auto">
         {priceChart.length ? (
           <LineChart points={priceChart} displayValue={getDisplayPrice} />
         ) : null}
       </div>
-      <div className="flex justify-center items-center">
+      <div className="flex justify-center items-center max-w-5xl m-auto">
         {popularityChart.length ? <LineChart points={popularityChart} /> : null}
       </div>
       <form onSubmit={handleSubmit(handleSubscribe)}>

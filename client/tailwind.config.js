@@ -9,7 +9,17 @@ module.exports = {
         sans: ["Inter", ...defaultTheme.fontFamily.sans],
       },
       colors: {
-        primary: defaultTheme.colors.blue,
+        primary: {
+          100: "#F8F9FC",
+          200: "#EBEFF7",
+          300: "#D7DFEF",
+          400: "#AFC0E0",
+          500: "#87A0D0",
+          600: "#5F81C1",
+          700: "#3761B1",
+          800: "#2C4E8E",
+          900: "#213A6A",
+        },
       },
     },
   },
