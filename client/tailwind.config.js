@@ -20,6 +20,8 @@ module.exports = {
           800: "#2C4E8E",
           900: "#213A6A",
         },
+        "font-primary": "#303030",
+        "font-secondary": "#5E5E5E",
       },
     },
   },

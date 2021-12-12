@@ -7,6 +7,7 @@ const HeroAnimation: React.FC = () => {
         boxShadow: "2px 2px 25px rgba(0, 0, 0, 0.08)",
         display: "inline-block",
       }}
+      aria-describedby="Remind me about bitcoin.com sending an alert that bitcoin price searches hit a 48 week low."
     >
       <style jsx>{`
         .email-contents {
@@ -490,14 +491,14 @@ const HeroAnimation: React.FC = () => {
                 className="Vector 1"
                 d="M48.6981 294.504C48.6981 294.504 59.9105 256.17 63.8678 256.17C67.8251 256.17 75.7397 301.114 79.0375 301.114C82.3352 301.114 93.5476 297.809 96.8454 294.504C100.143 291.2 113.334 273.354 114.653 270.05C115.972 266.745 125.206 241.629 128.504 241.629C131.802 241.629 146.312 294.504 149.609 294.504C152.907 294.504 162.141 270.05 164.779 270.05C167.417 270.05 182.587 301.114 185.225 301.114C187.863 301.114 201.714 296.487 203.693 294.504C205.671 292.522 220.841 270.05 223.479 270.05C226.117 270.05 244.585 308.384 244.585 308.384"
                 stroke="#3761B1"
-                stroke-width="2"
+                strokeWidth="2"
               />
               <path
                 className="Vector 2"
                 d="M243.491 307.837H47.0566"
                 stroke="#AFC0E0"
-                stroke-width="0.5"
-                stroke-dasharray="4 4"
+                strokeWidth="0.5"
+                strokeDasharray="4 4"
               />
             </g>
             <g className="email-header">
@@ -582,7 +583,7 @@ const HeroAnimation: React.FC = () => {
               height="58"
               fill="white"
             />
-            <g className="iconmonstr-email-1 1" clip-path="url(#clip0_413_140)">
+            <g className="iconmonstr-email-1 1" clipPath="url(#clip0_413_140)">
               <path
                 className="Vector"
                 d="M33.9245 28.9731L25.1807 21.8868H42.669L33.9245 28.9731ZM29.9667 27.6438L25.1698 23.756V32.8762L29.9667 27.6438ZM37.8824 27.6438L42.6792 32.8762V23.756L37.8824 27.6438ZM36.7465 28.5638L33.9245 30.8509L31.1026 28.5638L25.1859 35.0189H42.6632L36.7465 28.5638V28.5638Z"
