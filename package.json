@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "deploy": "firebase deploy --only functions",
-    "dev": "(cd functions && tsc -w && cd ..) | firebase serve --only functions"
+    "dev": "(cd functions && tsc --watch && cd ..) | firebase serve --only functions",
+    "build": "(cd functions && tsc && cd ..)"
   },
   "repository": {
     "type": "git",
@@ -19,7 +20,5 @@
     "url": "https://github.com/omerdemirkan/keyword-popularity-analyzer/issues"
   },
   "homepage": "https://github.com/omerdemirkan/keyword-popularity-analyzer#readme",
-  "dependencies": {
-    "google-trends-api": "^4.9.2"
-  }
+  "dependencies": {}
 }

@@ -1,2 +1,2 @@
 export * from "./getTrends";
-export * from "./getNWeekLow";
+export * from "./createSubscription";
