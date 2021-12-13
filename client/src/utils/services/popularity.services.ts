@@ -14,3 +14,10 @@ export async function fetchKeywordPopularityChart(
     date: new Date(timelineData.timestamp * 1000),
   }));
 }
+
+export function decodeCachedChartPoints(points: ChartPoint[]): ChartPoint[] {
+  return points.map((point) => ({
+    ...point,
+    date: new Date(point.date),
+  }));
+}

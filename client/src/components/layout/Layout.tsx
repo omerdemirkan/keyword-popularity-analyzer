@@ -26,13 +26,11 @@ export default Layout;
 const Navbar: React.FC = () => {
   return (
     <Container>
-      <nav className="flex pb-8 md:flex-row flex-col md:justify-between justify-center items-center flex-wrap">
-        <span className="mt-8">
-          <NavLink href="/">
-            <Logo />
-          </NavLink>
-        </span>
-        <div className="mt-8">
+      <nav className="flex py-8 md:flex-row flex-col md:justify-between justify-center items-center flex-wrap">
+        <NavLink href="/">
+          <Logo />
+        </NavLink>
+        <div className="md:block hidden">
           <NavLink
             newTab
             href="https://github.com/omerdemirkan/remind-me-about-bitcoin/issues"
@@ -57,9 +55,11 @@ const Footer: React.FC = () => {
     <footer className="py-6 flex justify-center">
       <span className="text-right pr-4">
         <p className="text-xs text-font-secondary font-light mb-2">SHARE</p>
-        <p className="text-xs text-font-secondary font-light mb-2">
-          SUBSCRIBE TO ALERTS
-        </p>
+        <NavLink href="/how-it-works">
+          <p className="text-xs text-font-secondary font-light mb-2">
+            HOW IT WORKS
+          </p>
+        </NavLink>
         <NavLink
           href="https://github.com/omerdemirkan/remind-me-about-bitcoin/issues"
           newTab

@@ -2,30 +2,33 @@ import Head from "next/head";
 import LineChart, { LineChartHeader } from "../components/ui/LineChart";
 import { ChartPoint, Subscription } from "../utils/types";
 import { useEffect, useState } from "react";
-import { fetchCryptoChart } from "../utils/services/price.services";
+import {
+  fetchCryptoChart,
+  fetchKeywordPopularityChart,
+  decodeCachedChartPoints,
+} from "../utils/services";
 import { getDisplayPrice, emailRegex } from "../utils/helpers";
-import { fetchKeywordPopularityChart } from "../utils/services/popularity.services";
 import { createSubscription } from "../utils/services/subscription.services";
 import HeroAnimation from "../components/animations/HeroAnimation";
 import Layout from "../components/layout/Layout";
 import Divider from "../components/ui/Divider";
 import Container from "../components/layout/Container";
 import { format } from "date-fns";
-import { auditKeyword } from "../utils/services";
 import { localStorageCache } from "../utils/helpers/cache.helpers";
 
 const WEEKS = 416;
 const SEARCH_TERM = "bitcoin price";
+const cacheRevalidationMs = 1000 * 60 * 60 * 12; // 12 hours
 
-const auditKeywordCached = localStorageCache(
-  auditKeyword,
+const fetchKeywordPopularityChartCached = localStorageCache(
+  fetchKeywordPopularityChart,
   "auditKeyword",
-  1000 * 60 * 60
+  cacheRevalidationMs
 );
 const fetchCryptoChartCached = localStorageCache(
   fetchCryptoChart,
   "fetchCryptoChart",
-  1000 * 60 * 60
+  cacheRevalidationMs
 );
 
 export default function Home() {
@@ -38,13 +41,17 @@ export default function Home() {
   }, []);
 
   async function initPopularityChart() {
-    // const popularityChart = (await auditKeywordCached(SEARCH_TERM, WEEKS))
-    //   .timeline;
-    // setPopularityChart(popularityChart);
+    const popularityChart = decodeCachedChartPoints(
+      await fetchKeywordPopularityChartCached(SEARCH_TERM, WEEKS)
+    );
+    setPopularityChart(popularityChart);
   }
 
   async function initPriceChart() {
-    setPriceChart(await fetchCryptoChartCached("bitcoin", "usd", WEEKS * 7));
+    const chartPoints = decodeCachedChartPoints(
+      await fetchCryptoChartCached("bitcoin", "usd", WEEKS * 7)
+    );
+    setPriceChart(chartPoints);
   }
 
   async function handleSubscribe(subscription: Subscription) {
@@ -56,23 +63,7 @@ export default function Home() {
       scrollView={
         <Container>
           {priceChart.length ? (
-            <div className="mb-14">
-              <LineChart
-                points={priceChart}
-                renderHeader={({ value, date }) => (
-                  <LineChartHeader
-                    header={getDisplayPrice(value)}
-                    subheader={`BTC / USD, ${format(
-                      date,
-                      "MMM d, yyyy"
-                    ).toUpperCase()}`}
-                  />
-                )}
-              />
-            </div>
-          ) : null}
-          {priceChart.length ? (
-            <div className="mb-36">
+            <div className="mb-20">
               <LineChart
                 points={priceChart}
                 renderHeader={({ value, date }) => (
@@ -112,9 +103,9 @@ export default function Home() {
         <title>Remind Me About Bitcoin</title>
       </Head>
       <Container>
-        <div className="flex flex-wrap justify-between align-center">
+        <div className="flex pb-12 lg:flex-row flex-col flex-wrap justify-between align-center">
           <section
-            className="flex flex-col justify-center self-center"
+            className="flex flex-col justify-center self-center my-12"
             aria-describedby="Intro Section"
           >
             <h1 className="text-4xl font-semibold mb-4 text-font-primary">
@@ -129,7 +120,7 @@ export default function Home() {
               No selling emails. No newsletter. No bullsh*t.
             </p>
           </section>
-          <div className="mt-12 self-center">
+          <div className="my-12 self-center">
             <HeroAnimation />
           </div>
         </div>

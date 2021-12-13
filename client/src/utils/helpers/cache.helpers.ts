@@ -12,7 +12,10 @@ export function localStorageCache<T extends Function>(
     if (cache && nowMs - cache.timestamp < invalidateAfterMs)
       return cache.value;
     const result = await fn(...args);
-    localStorage.setItem(key, JSON.stringify(result));
+    localStorage.setItem(
+      key,
+      JSON.stringify({ value: result, timestamp: nowMs })
+    );
     return result;
   };
 }
