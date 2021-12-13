@@ -26,11 +26,13 @@ export default Layout;
 const Navbar: React.FC = () => {
   return (
     <Container>
-      <nav className="h-24 flex justify-between items-center flex-wrap">
-        <NavLink href="/">
-          <Logo />
-        </NavLink>
-        <div>
+      <nav className="flex pb-8 md:flex-row flex-col md:justify-between justify-center items-center flex-wrap">
+        <span className="mt-8">
+          <NavLink href="/">
+            <Logo />
+          </NavLink>
+        </span>
+        <div className="mt-8">
           <NavLink
             newTab
             href="https://github.com/omerdemirkan/remind-me-about-bitcoin/issues"
@@ -40,7 +42,7 @@ const Navbar: React.FC = () => {
             </span>
           </NavLink>
           <NavLink newTab href="https://www.buymeacoffee.com/omerdemirkan">
-            <span className="text-sm font-semibold ml-12 text-primary-700">
+            <span className="text-sm font-semibold md:ml-12 ml-4 text-primary-700">
               BUY ME A COFFEE
             </span>
           </NavLink>

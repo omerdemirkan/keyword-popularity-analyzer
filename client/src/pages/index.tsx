@@ -38,9 +38,9 @@ export default function Home() {
   }, []);
 
   async function initPopularityChart() {
-    const popularityChart = (await auditKeywordCached(SEARCH_TERM, WEEKS))
-      .timeline;
-    setPopularityChart(popularityChart);
+    // const popularityChart = (await auditKeywordCached(SEARCH_TERM, WEEKS))
+    //   .timeline;
+    // setPopularityChart(popularityChart);
   }
 
   async function initPriceChart() {
@@ -71,7 +71,7 @@ export default function Home() {
               />
             </div>
           ) : null}
-          {/* {priceChart.length ? (
+          {priceChart.length ? (
             <div className="mb-36">
               <LineChart
                 points={priceChart}
@@ -86,7 +86,7 @@ export default function Home() {
                 )}
               />
             </div>
-          ) : null} */}
+          ) : null}
           {popularityChart.length ? (
             <div className="mb-36">
               <LineChart
