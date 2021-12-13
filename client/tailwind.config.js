@@ -1,8 +1,10 @@
 const defaultTheme = require("tailwindcss/defaultTheme");
 
 module.exports = {
-  purge: ["./pages/**/*.{js,ts,jsx,tsx}", "./components/**/*.{js,ts,jsx,tsx}"],
-  darkMode: false, // or 'media' or 'class'
+  content: [
+    "./src/pages/**/*.{js,ts,jsx,tsx}",
+    "./src/components/**/*.{js,ts,jsx,tsx}",
+  ],
   theme: {
     extend: {
       fontFamily: {
@@ -27,9 +29,6 @@ module.exports = {
         faint: "2px 2px 20px rgba(0, 0, 0, 0.08)",
       },
     },
-  },
-  variants: {
-    extend: {},
   },
   plugins: [],
 };
