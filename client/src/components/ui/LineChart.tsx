@@ -8,13 +8,13 @@ import LineChartSVG from "./LineChartSVG";
 export interface LineChartProps {
   style?: React.CSSProperties;
   points: ChartPoint[];
-  displayValue?(value: number): string;
+  renderHeader?(details: ChartPoint): React.ReactNode;
 }
 
 const LineChart: React.FC<LineChartProps> = ({
   points,
   style,
-  displayValue = defaultDisplayValue,
+  renderHeader,
 }) => {
   const [containerRef, containerDimensions] = useDimensions<HTMLDivElement>();
   const [isHovering, setIsHovering] = useState<boolean>(false);
@@ -45,16 +45,11 @@ const LineChart: React.FC<LineChartProps> = ({
 
   return (
     <div className="w-full">
-      <h1 className="text-2xl">
-        {displayValue(
-          isHovering
-            ? points[hoverIndex].value
-            : points[points.length - 1].value
-        )}
-      </h1>
+      {renderHeader &&
+        renderHeader(points[isHovering ? hoverIndex : points.length - 1])}
       <div
         ref={containerRef}
-        className="h-36 relative"
+        className="h-44 relative"
         style={style}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
@@ -83,6 +78,21 @@ const LineChart: React.FC<LineChartProps> = ({
 // export default memo(ChartLine);
 export default LineChart;
 
-function defaultDisplayValue(value: number) {
-  return value.toFixed(2);
+export interface LineChartHeaderProps {
+  header: string;
+  subheader: string;
 }
+
+export const LineChartHeader: React.FC<LineChartHeaderProps> = ({
+  header,
+  subheader,
+}) => {
+  return (
+    <div>
+      <h3 className="text-2xl font-semibold text-font-primary mb-3">
+        {header}
+      </h3>
+      <h6 className="text-sm font-medium text-font-secondary">{subheader}</h6>
+    </div>
+  );
+};

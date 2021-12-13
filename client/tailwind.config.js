@@ -23,6 +23,9 @@ module.exports = {
         "font-primary": "#303030",
         "font-secondary": "#5E5E5E",
       },
+      boxShadow: {
+        faint: "2px 2px 20px rgba(0, 0, 0, 0.08)",
+      },
     },
   },
   variants: {
