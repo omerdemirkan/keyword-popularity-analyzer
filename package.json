@@ -1,6 +1,6 @@
 {
-  "name": "keyword-popularity-analyzer",
-  "version": "1.0.0",
+  "name": "remind-me-about-bitcoin",
+  "version": "0.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -19,6 +19,5 @@
   "bugs": {
     "url": "https://github.com/omerdemirkan/keyword-popularity-analyzer/issues"
   },
-  "homepage": "https://github.com/omerdemirkan/keyword-popularity-analyzer#readme",
-  "dependencies": {}
+  "homepage": "https://github.com/omerdemirkan/keyword-popularity-analyzer#readme"
 }
