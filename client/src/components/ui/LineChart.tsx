@@ -96,3 +96,16 @@ export const LineChartHeader: React.FC<LineChartHeaderProps> = ({
     </div>
   );
 };
+
+export const LineChartSkeleton: React.FC = () => {
+  return <div className="w-full h-44 bg-gray-300"></div>;
+};
+
+export const LineChartHeaderSkeleton: React.FC = () => {
+  return (
+    <div>
+      <span className="h-5 mb-5 bg-font-primary"></span>
+      <span className="h-4 mb-4 bg-font-secondary"></span>
+    </div>
+  );
+};

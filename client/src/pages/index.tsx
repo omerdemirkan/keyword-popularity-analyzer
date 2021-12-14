@@ -22,7 +22,7 @@ const cacheRevalidationMs = 1000 * 60 * 60 * 12; // 12 hours
 
 const fetchKeywordPopularityChartCached = localStorageCache(
   fetchKeywordPopularityChart,
-  "auditKeyword",
+  "fetchKeywordPopularityChart",
   cacheRevalidationMs
 );
 const fetchCryptoChartCached = localStorageCache(

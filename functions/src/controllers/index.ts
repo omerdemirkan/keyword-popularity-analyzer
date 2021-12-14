@@ -1,2 +1,2 @@
-export * from "./getTrends";
+export * from "./getKeywordTrend";
 export * from "./createSubscription";
