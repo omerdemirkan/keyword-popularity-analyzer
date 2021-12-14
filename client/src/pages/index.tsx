@@ -15,6 +15,7 @@ import Divider from "../components/ui/Divider";
 import Container from "../components/layout/Container";
 import { format } from "date-fns";
 import { localStorageCache } from "../utils/helpers/cache.helpers";
+import { useRouter } from "next/router";
 
 const WEEKS = 416;
 const SEARCH_TERM = "bitcoin price";
@@ -34,6 +35,8 @@ const fetchCryptoChartCached = localStorageCache(
 export default function Home() {
   const [priceChart, setPriceChart] = useState<ChartPoint[]>([]);
   const [popularityChart, setPopularityChart] = useState<ChartPoint[]>([]);
+  const [isSubscribing, setIsSubscribing] = useState<boolean>(false);
+  const router = useRouter();
 
   useEffect(function () {
     initPopularityChart();
@@ -55,57 +58,29 @@ export default function Home() {
   }
 
   async function handleSubscribe(subscription: Subscription) {
-    await createSubscription(subscription);
+    if (isSubscribing) return;
+    setIsSubscribing(true);
+    try {
+      await createSubscription(subscription);
+      localStorage.setItem("subscription", JSON.stringify(subscription));
+      router.push("/subscription");
+    } catch (e) {
+      alert(
+        "Couldn't subscribe; please try again later. If this persists, please report this bug."
+      );
+      setIsSubscribing(false);
+    }
   }
 
   return (
-    <Layout
-      scrollView={
-        <Container>
-          {priceChart.length ? (
-            <div className="mb-20">
-              <LineChart
-                points={priceChart}
-                renderHeader={({ value, date }) => (
-                  <LineChartHeader
-                    header={getDisplayPrice(value)}
-                    subheader={`BTC / USD, ${format(
-                      date,
-                      "MMM d, yyyy"
-                    ).toUpperCase()}`}
-                  />
-                )}
-              />
-            </div>
-          ) : null}
-          {popularityChart.length ? (
-            <div className="mb-36">
-              <LineChart
-                points={popularityChart}
-                renderHeader={({ value, date }) => (
-                  <LineChartHeader
-                    header={`${Math.round(value)}% of ${Math.round(
-                      WEEKS / 52
-                    )}-year max`}
-                    subheader={`"${SEARCH_TERM.toUpperCase()}" SEARCHES, ${format(
-                      date,
-                      "MMM d, yyyy"
-                    ).toUpperCase()}`}
-                  />
-                )}
-              />
-            </div>
-          ) : null}
-        </Container>
-      }
-    >
+    <Layout>
       <Head>
         <title>Remind Me About Bitcoin</title>
       </Head>
       <Container>
         <div className="flex pb-12 lg:flex-row flex-col flex-wrap justify-between align-center">
           <section
-            className="flex flex-col justify-center self-center my-12"
+            className="flex flex-col justify-center self-center my-12 max-w-full"
             aria-describedby="Intro Section"
           >
             <h1 className="text-4xl font-semibold mb-4 text-font-primary">
@@ -115,15 +90,52 @@ export default function Home() {
             <p className="text-lg font-light text-font-secondary mb-10">
               Get notified automatically when bitcoin leaves headlines.
             </p>
-            <EmailCapture onSubmit={(email) => handleSubscribe({ email })} />
+            <EmailCapture
+              onSubmit={(email) => handleSubscribe({ email })}
+              isSubmitting={isSubscribing}
+            />
             <p className="text-sm mt-5 text-font-secondary font-light">
               No selling emails. No newsletter. No bullsh*t.
             </p>
           </section>
-          <div className="my-12 self-center">
+          <div className="my-12 self-center max-w-full">
             <HeroAnimation />
           </div>
         </div>
+        {priceChart.length ? (
+          <div className="mb-20 mt-12">
+            <LineChart
+              points={priceChart}
+              renderHeader={({ value, date }) => (
+                <LineChartHeader
+                  header={getDisplayPrice(value)}
+                  subheader={`BTC / USD, ${format(
+                    date,
+                    "MMM d, yyyy"
+                  ).toUpperCase()}`}
+                />
+              )}
+            />
+          </div>
+        ) : null}
+        {popularityChart.length ? (
+          <div className="mb-36">
+            <LineChart
+              points={popularityChart}
+              renderHeader={({ value, date }) => (
+                <LineChartHeader
+                  header={`${Math.round(value)}% of ${Math.round(
+                    WEEKS / 52
+                  )}-year max`}
+                  subheader={`"${SEARCH_TERM.toUpperCase()}" SEARCHES, ${format(
+                    date,
+                    "MMM d, yyyy"
+                  ).toUpperCase()}`}
+                />
+              )}
+            />
+          </div>
+        ) : null}
       </Container>
     </Layout>
   );
@@ -131,9 +143,13 @@ export default function Home() {
 
 interface EmailCaptureProps {
   onSubmit(email: string): any;
+  isSubmitting?: boolean;
 }
 
-const EmailCapture: React.FC<EmailCaptureProps> = ({ onSubmit }) => {
+const EmailCapture: React.FC<EmailCaptureProps> = ({
+  onSubmit,
+  isSubmitting,
+}) => {
   const [email, setEmail] = useState("");
   function handleClick() {
     onSubmit(email);
@@ -144,14 +160,16 @@ const EmailCapture: React.FC<EmailCaptureProps> = ({ onSubmit }) => {
       <input
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="h-10 pl-6 outline-none text-lg text-font-secondary flex-grow bg-transparent"
+        className="h-10 pl-6 outline-none text-lg text-font-secondary flex-grow bg-transparent min-w-0"
         placeholder="Email"
       />
       <Divider vertical />
       <button
         onClick={handleClick}
-        className="text-primary-700 text-lg font-semibold px-6 bg-transparent"
-        disabled={!emailRegex.test(email)}
+        className={`${
+          isSubmitting ? "text-gray-400" : "text-primary-700"
+        } text-lg font-semibold px-6 bg-transparent`}
+        disabled={!emailRegex.test(email) || isSubmitting}
       >
         Submit
       </button>
