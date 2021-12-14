@@ -20,7 +20,6 @@ export async function auditKeyword(
     weeks: weeks,
     trendWeekClearance: 104,
   });
-  console.log(timeline);
   const latestPopularity = timeline[timeline.length - 1];
   return {
     keyword,
@@ -78,7 +77,7 @@ async function fetchKeywordPopularityTimeline(
     firstTimelineEntry &&
     differenceInWeeks(firstTimelineEntry, startDate) < 7
   )
-    return existingTimeline;
+    return existingTimeline.slice(existingTimeline.length - weeks);
   const unzippedTimelines: KeywordPopularity[][] = [];
 
   if (timelineSnapshot.empty) {
