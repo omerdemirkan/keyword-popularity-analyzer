@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "deploy": "firebase deploy --only functions",
     "dev": "firebase serve --only functions",
-    "build": "(cd functions && tsc && cd ..)"
+    "build": "(cd functions && tsc && npm install && cd ..)"
   },
   "repository": {
     "type": "git",
