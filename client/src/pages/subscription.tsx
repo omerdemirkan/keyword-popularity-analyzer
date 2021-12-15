@@ -3,11 +3,20 @@ import Container from "../components/layout/Container";
 import Layout from "../components/layout/Layout";
 import Divider from "../components/ui/Divider";
 import NavLink from "../components/util/NavLink";
+import { sendWelcomeEmail } from "../utils/services";
 
 const SubscriptionPage: React.FC = () => {
   const router = useRouter();
-  async function handleUnsubscribeClicked() {
+
+  function handleUnsubscribeClicked() {
     router.push("/unsubscribe");
+  }
+
+  async function handleResendEmailClicked() {
+    const email = JSON.parse(
+      localStorage.getItem("subscription") || "{}"
+    ).email;
+    await sendWelcomeEmail(email);
   }
 
   return (
@@ -25,7 +34,10 @@ const SubscriptionPage: React.FC = () => {
             spam folder.
           </p>
           <div className="flex justify-center">
-            <button className="px-6 py-2 text-sm font-semibold text-font-secondary">
+            <button
+              className="px-6 py-2 text-sm font-semibold text-font-secondary"
+              onClick={handleResendEmailClicked}
+            >
               RESEND EMAIL
             </button>
             <Divider vertical />

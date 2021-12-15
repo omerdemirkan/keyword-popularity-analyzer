@@ -12,6 +12,9 @@ export const createSubscription = functions.https.onCall(
 export const deleteSubscription = functions.https.onCall(
   controllers.deleteSubscription
 );
+export const sendWelcomeEmail = functions.https.onCall(
+  controllers.sendWelcomeEmail
+);
 
 // Jobs
 // export const sendAlerts = functions.pubsub

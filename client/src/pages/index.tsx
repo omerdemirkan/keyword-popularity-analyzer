@@ -6,6 +6,7 @@ import {
   fetchCryptoChart,
   fetchKeywordPopularityChart,
   decodeCachedChartPoints,
+  sendWelcomeEmail,
 } from "../utils/services";
 import { getDisplayPrice, emailRegex } from "../utils/helpers";
 import { createSubscription } from "../utils/services/subscription.services";
@@ -62,7 +63,9 @@ export default function Home() {
     setIsSubscribing(true);
     try {
       await createSubscription(subscription);
+      sendWelcomeEmail(subscription.email);
       localStorage.setItem("subscription", JSON.stringify(subscription));
+
       router.push("/subscription");
     } catch (e) {
       alert(
