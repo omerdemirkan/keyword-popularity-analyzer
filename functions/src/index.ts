@@ -9,6 +9,9 @@ export const getKeywordTrend = functions.https.onCall(
 export const createSubscription = functions.https.onCall(
   controllers.createSubscription
 );
+export const deleteSubscription = functions.https.onCall(
+  controllers.deleteSubscription
+);
 
 // Jobs
 // export const sendAlerts = functions.pubsub

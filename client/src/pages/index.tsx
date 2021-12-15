@@ -160,7 +160,7 @@ const EmailCapture: React.FC<EmailCaptureProps> = ({
       <input
         value={email}
         onChange={(e) => setEmail(e.target.value)}
-        className="h-10 pl-6 outline-none text-lg text-font-secondary flex-grow bg-transparent min-w-0"
+        className="h-10 pl-6 outline-none md:text-lg text-font-secondary flex-grow bg-transparent min-w-0"
         placeholder="Email"
       />
       <Divider vertical />
