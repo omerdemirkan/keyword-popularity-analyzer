@@ -6,3 +6,8 @@ export const createSubscription = httpsCallable<Subscription, void>(
   functions,
   "createSubscription"
 );
+
+export const deleteSubscription = httpsCallable<string, void>(
+  functions,
+  "deleteSubscription"
+);

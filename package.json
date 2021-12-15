@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "deploy": "firebase deploy --only functions",
-    "dev": "(cd functions && tsc --watch && cd ..) | firebase serve --only functions",
+    "dev": "firebase serve --only functions",
     "build": "(cd functions && tsc && cd ..)"
   },
   "repository": {

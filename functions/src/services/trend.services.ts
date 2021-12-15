@@ -6,46 +6,16 @@ import {
 } from "google-trends-api";
 import { GOOGLE_TRENDS_MAX_WEEKS } from "../constants";
 import db from "../db";
-import {
-  KeywordAudit,
-  KeywordPopularity,
-  FetchKeywordPopularityTimelineOptions,
-} from "../types";
+import { KeywordPopularity, fetchKeywordTrendOptions } from "../types";
 
-export async function auditKeyword(
-  keyword: string,
-  weeks = GOOGLE_TRENDS_MAX_WEEKS
-): Promise<KeywordAudit> {
-  const timeline = await fetchKeywordPopularityTimeline(keyword, {
-    weeks: weeks,
-    trendWeekClearance: 104,
-  });
-  console.log(timeline);
-  const latestPopularity = timeline[timeline.length - 1];
-  return {
-    keyword,
-    nWeekLow: latestPopularity.nWeekLow as number,
-    nWeekHigh: latestPopularity.nWeekHigh as number,
-    timeline,
-  };
-}
-
-async function fetchGoogleTrends(
-  options: Options
-): Promise<GoogleTrendsTimelineData[]> {
-  console.log("fetching...");
-  const res = await interestOverTime(options);
-  return JSON.parse(res).default.timelineData;
-}
-
-async function fetchKeywordPopularityTimeline(
+export async function fetchKeywordTrend(
   keyword: string,
   {
     weeks = GOOGLE_TRENDS_MAX_WEEKS,
-    // Buffer of extra weeks of popularity to
-    // more accurately determine popularity lows and highs.
+    // To better determine nWeekHigh and nWeekLow values
+    // for the first keyword popularity entries
     trendWeekClearance = 104,
-  }: FetchKeywordPopularityTimelineOptions = {}
+  }: fetchKeywordTrendOptions = {}
 ): Promise<KeywordPopularity[]> {
   const overlap = Math.floor(GOOGLE_TRENDS_MAX_WEEKS / 2);
   // First checking for existing entries, since we might not have to
@@ -57,38 +27,30 @@ async function fetchKeywordPopularityTimeline(
   const trendsCollection = db.collection("trends");
   const timelineSnapshot = await trendsCollection
     .where("keyword", "==", keyword)
+    .orderBy("timestamp", "asc")
     .get();
-  timelineSnapshot.docs.sort((a, b) => a.get("timestamp") - b.get("timestamp"));
 
   const existingTimeline = timelineSnapshot.docs.map(
     (doc) => doc.data() as KeywordPopularity
   );
-
-  const lastTimelineEntry = !timelineSnapshot.empty
-    ? new Date(
-        timelineSnapshot.docs[timelineSnapshot.size - 1].get("timestamp") * 1000
+  const lastTimelineEntry = existingTimeline.length
+    ? unixTimestampToDate(
+        timelineSnapshot.docs[timelineSnapshot.size - 1].get("timestamp")
       )
     : null;
-  const firstTimelineEntry = !timelineSnapshot.empty
-    ? new Date(timelineSnapshot.docs[0].get("timestamp") * 1000)
+  const firstTimelineEntry = existingTimeline.length
+    ? unixTimestampToDate(timelineSnapshot.docs[0].get("timestamp"))
     : null;
-  if (
-    lastTimelineEntry &&
-    differenceInWeeks(now, lastTimelineEntry) < 7 &&
-    firstTimelineEntry &&
-    differenceInWeeks(firstTimelineEntry, startDate) < 7
-  )
-    return existingTimeline;
-  const unzippedTimelines: KeywordPopularity[][] = [];
+  const unzippedTimelinesPromises: Promise<KeywordPopularity[][]>[] = [];
 
   if (timelineSnapshot.empty) {
-    unzippedTimelines.push(
-      ...(await fetchUnzippedTimelines({
+    unzippedTimelinesPromises.push(
+      fetchUnzippedTimelines({
         keyword,
         overlap,
         startDate: sub(startDate, { weeks: trendWeekClearance }),
         endDate: now,
-      }))
+      })
     );
   }
 
@@ -96,47 +58,78 @@ async function fetchKeywordPopularityTimeline(
     firstTimelineEntry &&
     differenceInDays(firstTimelineEntry, startDate) > 7
   ) {
-    unzippedTimelines.push(
-      ...(await fetchUnzippedTimelines({
+    unzippedTimelinesPromises.push(
+      fetchUnzippedTimelines({
         keyword,
         overlap,
         startDate: sub(startDate, { weeks: trendWeekClearance }),
         endDate: add(firstTimelineEntry, { weeks: overlap }),
-      }))
+      })
     );
   }
 
-  if (existingTimeline.length) unzippedTimelines.push(existingTimeline);
-
   if (lastTimelineEntry && differenceInWeeks(now, lastTimelineEntry) > 7) {
-    unzippedTimelines.push(
-      ...(await fetchUnzippedTimelines({
+    unzippedTimelinesPromises.push(
+      fetchUnzippedTimelines({
         keyword,
         overlap,
         startDate: sub(lastTimelineEntry, { weeks: overlap }),
         endDate: now,
-      }))
+      })
     );
   }
 
+  const unzippedTimelines = [];
+  if (existingTimeline.length) unzippedTimelines.push(existingTimeline);
+  for (const timelines of await Promise.all(unzippedTimelinesPromises))
+    unzippedTimelines.push(...timelines);
+
   const zippedTimeline = zipRelativeTimelines(unzippedTimelines);
   populateKeywordTrends(zippedTimeline);
+  syncNewTrendTimelineWithDatabase(zippedTimeline, existingTimeline);
 
+  const slicedTimeline = zippedTimeline.slice(zippedTimeline.length - weeks);
+  const normalizedTimeline = normalizeTrendTimeline(slicedTimeline);
+  return normalizedTimeline;
+}
+
+async function syncNewTrendTimelineWithDatabase(
+  newTrendTimeline: KeywordPopularity[],
+  existingTrendTimeline: KeywordPopularity[]
+) {
+  const trendsCollection = db.collection("trends");
   let batch = db.batch();
   let count = 0; // Firebase allows at most 500 operations per batch
-  const docIdSet = new Set(timelineSnapshot.docs.map((doc) => doc.id));
-  for (const trendData of zippedTimeline) {
-    const id = trendData.keyword + "-" + trendData.timestamp;
-    if (docIdSet.has(id)) batch.update(trendsCollection.doc(id), trendData);
-    else batch.create(trendsCollection.doc(id), trendData);
-    count++;
+  const existingTrendItemMap: { [key: string]: KeywordPopularity } = {};
+  for (const trendData of existingTrendTimeline)
+    existingTrendItemMap[getKeywordPopularityId(trendData)] = trendData;
+
+  const promises: Promise<FirebaseFirestore.WriteResult[]>[] = [];
+  for (const trendData of newTrendTimeline) {
+    const id = getKeywordPopularityId(trendData);
+    const docRef = trendsCollection.doc(id);
+
+    if (!existingTrendItemMap[id]) {
+      batch.create(docRef, trendData);
+      count++;
+    } else if (existingTrendItemMap[id]?.value !== trendData.value) {
+      batch.set(docRef, { value: existingTrendItemMap[id].value });
+      count++;
+    }
     if (count == 400) {
-      batch.commit();
+      promises.push(batch.commit());
       batch = db.batch();
     }
   }
-  batch.commit();
-  return zippedTimeline.slice(zippedTimeline.length - weeks);
+  promises.push(batch.commit());
+  await Promise.all(promises);
+}
+
+async function fetchGoogleTrends(
+  options: Options
+): Promise<GoogleTrendsTimelineData[]> {
+  const res = await interestOverTime(options);
+  return JSON.parse(res).default.timelineData;
 }
 
 async function fetchUnzippedTimelines({
@@ -297,4 +290,16 @@ function mapGoogleTrendsTimeline(
     nWeekHigh: -1,
     keyword,
   }));
+}
+
+function normalizeTrendTimeline(
+  timeline: KeywordPopularity[]
+): KeywordPopularity[] {
+  const max = timeline.reduce((acc, curr) => Math.max(acc, curr.value), 0);
+  const multiplier = 100 / max;
+  return timeline.map((data) => ({ ...data, value: data.value * multiplier }));
+}
+
+function getKeywordPopularityId(data: KeywordPopularity) {
+  return data.keyword + "-" + data.timestamp;
 }

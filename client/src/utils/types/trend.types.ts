@@ -14,7 +14,7 @@ export interface KeywordAudit {
   nWeekHigh: number;
 }
 
-export interface FetchKeywordPopularityTimelineOptions {
+export interface fetchKeywordTrendOptions {
   weeks?: number;
   trendWeekClearance?: number;
 }
