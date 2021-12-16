@@ -98,14 +98,14 @@ export const LineChartHeader: React.FC<LineChartHeaderProps> = ({
 };
 
 export const LineChartSkeleton: React.FC = () => {
-  return <div className="w-full h-44 bg-gray-300"></div>;
+  return <div className="w-full h-40 bg-gray-50"></div>;
 };
 
 export const LineChartHeaderSkeleton: React.FC = () => {
   return (
-    <div>
-      <span className="h-5 mb-5 bg-font-primary"></span>
-      <span className="h-4 mb-4 bg-font-secondary"></span>
+    <div aria-label="Chart Loading Indicator">
+      <div className="h-6 w-48 mb-3 bg-gray-50"></div>
+      <div className="h-5 w-52 mb-3 bg-gray-50"></div>
     </div>
   );
 };

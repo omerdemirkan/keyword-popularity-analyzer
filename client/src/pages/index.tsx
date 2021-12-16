@@ -1,5 +1,9 @@
 import Head from "next/head";
-import LineChart, { LineChartHeader } from "../components/ui/LineChart";
+import LineChart, {
+  LineChartHeader,
+  LineChartHeaderSkeleton,
+  LineChartSkeleton,
+} from "../components/ui/LineChart";
 import { ChartPoint, Subscription } from "../utils/types";
 import { useEffect, useState } from "react";
 import {
@@ -113,8 +117,8 @@ export default function Home() {
             <HeroAnimation />
           </div>
         </div>
-        {priceChart.length ? (
-          <div className="mb-20 mt-12">
+        <div className="mb-20 mt-12">
+          {priceChart.length ? (
             <LineChart
               points={priceChart}
               renderHeader={({ value, date }) => (
@@ -127,10 +131,15 @@ export default function Home() {
                 />
               )}
             />
-          </div>
-        ) : null}
-        {popularityChart.length ? (
-          <div className="mb-36">
+          ) : (
+            <>
+              <LineChartHeaderSkeleton />
+              <LineChartSkeleton />
+            </>
+          )}
+        </div>
+        <div className="mb-36">
+          {popularityChart.length ? (
             <LineChart
               points={popularityChart}
               renderHeader={({ value, date }) => (
@@ -145,8 +154,13 @@ export default function Home() {
                 />
               )}
             />
-          </div>
-        ) : null}
+          ) : (
+            <>
+              <LineChartHeaderSkeleton />
+              <LineChartSkeleton />
+            </>
+          )}
+        </div>
       </Container>
     </Layout>
   );
