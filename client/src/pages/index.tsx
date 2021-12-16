@@ -17,6 +17,7 @@ import Container from "../components/layout/Container";
 import { format } from "date-fns";
 import { localStorageCache } from "../utils/helpers/cache.helpers";
 import { useRouter } from "next/router";
+import NavLink from "../components/util/NavLink";
 
 const WEEKS = 416;
 const SEARCH_TERM = "bitcoin price";
@@ -98,7 +99,14 @@ export default function Home() {
               isSubmitting={isSubscribing}
             />
             <p className="text-sm mt-5 text-font-secondary font-light">
-              No selling emails. No newsletter. No bullsh*t.
+              No selling emails. No newsletter. Fully{" "}
+              <NavLink
+                href="https://github.com/omerdemirkan/remind-me-about-bitcoin"
+                newTab
+              >
+                <span className="underline">open source</span>
+              </NavLink>
+              .
             </p>
           </section>
           <div className="my-12 self-center max-w-full">
