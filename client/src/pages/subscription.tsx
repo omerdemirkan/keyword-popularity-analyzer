@@ -23,7 +23,7 @@ const SubscriptionPage: React.FC = () => {
   return (
     <Layout>
       <Head>
-        <title>You're Subscribed!</title>
+        <title>{"You're Subscribed!"}</title>
       </Head>
       <Container>
         <div className="text-center py-20">
