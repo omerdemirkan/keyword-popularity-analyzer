@@ -3,12 +3,61 @@ import * as sendGrid from "@sendgrid/mail";
 
 sendGrid.setApiKey(config().sendGrid.apiKey);
 
-type MailData = sendGrid.MailDataRequired & {
-  type: "info" | "help" | "notification";
-};
+export interface SendNWeekLowOptions {
+  emails: string[];
+  keyword: string;
+  nWeekLow: number;
+  reportBugUrl: string;
+  buildUnsubscribeUrl(email: string): string;
+}
 
-export async function sendNWeekLowEmails(data: MailData[]): Promise<void> {
-  await sendGrid.send(data);
+export async function sendNWeekLowEmails({
+  emails,
+  keyword,
+  nWeekLow,
+  reportBugUrl,
+  buildUnsubscribeUrl,
+}: SendNWeekLowOptions): Promise<void> {
+  const maxEmailsPerRequest = config().sendGrid.maxEmailsPerRequest;
+  const promises: Promise<unknown>[] = [];
+  let requestEmails: string[] = [];
+  const templateId = config().sendGrid.templatesIds.nWeekLowEmail;
+
+  emails.forEach(function (email, index) {
+    requestEmails.push(email);
+    if (
+      requestEmails.length === maxEmailsPerRequest ||
+      index === emails.length - 1
+    ) {
+      promises.push(
+        sendGrid.send({
+          from: "Crypto Alerts <info@remindmeaboutbitcoin.com>",
+          templateId,
+          dynamicTemplateData: {
+            keyword,
+            nWeekLow,
+            reportBugUrl,
+            subject: "Crypto popularity is down!",
+          },
+          personalizations: requestEmails.map((email) => ({
+            to: email,
+            dynamicTemplateData: {
+              unsubscribeUrl: buildUnsubscribeUrl(email),
+            },
+          })),
+        })
+      );
+      requestEmails = [];
+    }
+  });
+  await Promise.all(promises);
+}
+
+export interface SendWelcomeEmail {
+  email: string;
+  templateId: string;
+  unsubscribeUrl: string;
+  reportBugUrl: string;
 }
 
 export async function sendWelcomeEmail({
@@ -16,14 +65,9 @@ export async function sendWelcomeEmail({
   templateId,
   unsubscribeUrl,
   reportBugUrl,
-}: {
-  email: string;
-  templateId: string;
-  unsubscribeUrl: string;
-  reportBugUrl: string;
-}): Promise<void> {
+}: SendWelcomeEmail): Promise<void> {
   await sendGrid.send({
-    from: "info@remindmeaboutbitcoin.com",
+    from: "Crypto Alerts <info@remindmeaboutbitcoin.com>",
     to: email,
     templateId,
     dynamicTemplateData: {
