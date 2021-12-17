@@ -1,4 +1,4 @@
-import { add, differenceInDays, differenceInWeeks, sub } from "date-fns";
+import { add, differenceInDays, sub } from "date-fns";
 import {
   interestOverTime,
   Options,
@@ -31,7 +31,11 @@ export async function fetchKeywordTrend(
     .get();
 
   const existingTimeline = timelineSnapshot.docs.map(
-    (doc) => doc.data() as KeywordPopularity
+    (doc) =>
+      ({
+        ...doc.data(),
+        date: unixTimestampToDate(doc.get("timestamp")),
+      } as KeywordPopularity)
   );
   const lastTimelineEntry = existingTimeline.length
     ? unixTimestampToDate(
@@ -68,7 +72,7 @@ export async function fetchKeywordTrend(
     );
   }
 
-  if (lastTimelineEntry && differenceInWeeks(now, lastTimelineEntry) > 7) {
+  if (lastTimelineEntry && differenceInDays(now, lastTimelineEntry) > 7) {
     unzippedTimelinesPromises.push(
       fetchUnzippedTimelines({
         keyword,
@@ -201,8 +205,7 @@ function zipRelativeTimelines(
         let nextIndex = nextTimelineEndIndex,
           currIndex = currTimeline.length - 1;
         nextIndex >= 0 &&
-        nextTimeline[nextIndex].date.getTime() ===
-          currTimeline[currIndex].date.getTime();
+        nextTimeline[nextIndex].timestamp === currTimeline[currIndex].timestamp;
         nextIndex--, currIndex--
       ) {
         currSum += currTimeline[currIndex].value;
@@ -211,11 +214,11 @@ function zipRelativeTimelines(
       weight *= nextSum / currSum;
     }
 
-    const stopDate = prevTimeline
-      ? prevTimeline[prevTimeline.length - 1].date
-      : new Date(0);
+    const stopTimestamp = prevTimeline
+      ? prevTimeline[prevTimeline.length - 1].timestamp
+      : Infinity;
     let i = currTimeline.length;
-    while (i-- && currTimeline[i].date.getTime() !== stopDate.getTime()) {
+    while (i-- && currTimeline[i].timestamp !== stopTimestamp) {
       zippedTimeline.push({
         ...currTimeline[i],
         value: weight * currTimeline[i].value,
@@ -235,13 +238,13 @@ function getSortedAndFilteredUnzippedTimelines(
 ): KeywordPopularity[][] {
   const sortedTimelines = unzippedTimelines
     .filter((timeline) => timeline.length)
-    .sort((a, b) => a[0].date.getTime() - b[0].date.getTime());
+    .sort((a, b) => a[0].timestamp - b[0].timestamp);
   const filteredTimelines: KeywordPopularity[][] = [];
   for (const timeline of sortedTimelines) {
     if (
       !filteredTimelines.length ||
-      filteredTimelines[filteredTimelines.length - 1][0].date.getTime() !==
-        timeline[0].date.getTime()
+      filteredTimelines[filteredTimelines.length - 1][0].timestamp !==
+        timeline[0].timestamp
     )
       filteredTimelines.push(timeline);
     else if (

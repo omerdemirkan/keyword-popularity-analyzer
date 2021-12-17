@@ -1,3 +1,4 @@
+import Head from "next/head";
 import { useRouter } from "next/router";
 import Container from "../components/layout/Container";
 import Layout from "../components/layout/Layout";
@@ -21,6 +22,9 @@ const SubscriptionPage: React.FC = () => {
 
   return (
     <Layout>
+      <Head>
+        <title>{"You're Subscribed!"}</title>
+      </Head>
       <Container>
         <div className="text-center py-20">
           <h1 className="text-2xl font-semibold text-font-primary mb-2">
