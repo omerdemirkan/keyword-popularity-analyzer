@@ -117,7 +117,7 @@ async function syncNewTrendTimelineWithDatabase(
       batch.create(docRef, trendData);
       count++;
     } else if (existingTrendItemMap[id]?.value !== trendData.value) {
-      batch.set(docRef, { value: existingTrendItemMap[id].value });
+      batch.update(docRef, { value: existingTrendItemMap[id].value });
       count++;
     }
     if (count == 400) {
