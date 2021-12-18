@@ -1,5 +1,5 @@
-import { Controller } from "../types";
-import { sendWelcomeEmail as sendWelcome } from "../services";
+import { Controller } from "../utils/types";
+import { sendWelcomeEmail as sendWelcome } from "../utils/services";
 import { config } from "../config";
 
 export const sendWelcomeEmail: Controller<string, void> = async function (

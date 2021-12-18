@@ -5,7 +5,7 @@ import {
   GoogleTrendsTimelineData,
 } from "google-trends-api";
 import { GOOGLE_TRENDS_MAX_WEEKS } from "../constants";
-import db from "../db";
+import db from "../../db";
 import { KeywordPopularity, fetchKeywordTrendOptions } from "../types";
 
 export async function fetchKeywordTrend(
