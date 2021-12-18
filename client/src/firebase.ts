@@ -17,4 +17,4 @@ const app = initializeApp({
 export const functions = getFunctions(app);
 export const db = getFirestore(app);
 
-if (__DEV__) connectFunctionsEmulator(functions, "localhost", 5000);
+if (__DEV__) connectFunctionsEmulator(functions, "localhost", 5001);
