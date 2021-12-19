@@ -8,7 +8,6 @@ import LineChartSVG from "./LineChartSVG";
 export interface LineChartProps {
   points: ChartPoint[];
   header?: React.ReactNode;
-  svgColor?: string;
   renderHeader?(details: ChartPoint): React.ReactNode;
   artifacts?: React.ReactNode;
   renderArtifacts?(points: ChartPoint[]): React.ReactNode;
@@ -17,7 +16,6 @@ export interface LineChartProps {
 const LineChart: React.FC<LineChartProps> = ({
   points,
   header,
-  svgColor,
   renderHeader,
   artifacts,
   renderArtifacts,
@@ -68,7 +66,6 @@ const LineChart: React.FC<LineChartProps> = ({
           chartWidth={containerDimensions.width}
           lowerBound={bounds.min}
           upperBound={bounds.max}
-          color={svgColor}
         />
         <LineChartCursor
           points={points}
