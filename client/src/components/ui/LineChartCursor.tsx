@@ -2,27 +2,31 @@ import differenceInMilliseconds from "date-fns/differenceInMilliseconds";
 import { ChartPoint } from "../../utils/types";
 
 interface LineChartCursorProps {
-  isHovering: boolean;
   points: ChartPoint[];
-  hoverIndex: number;
-  lowerBound: number;
-  upperBound: number;
+  cursorIndex: number;
+  lowerBound?: number;
+  upperBound?: number;
   startDate: Date;
   endDate: Date;
+  isHidden?: boolean;
+  lineColor?: string;
 }
 
 const LineChartCursor: React.FC<LineChartCursorProps> = ({
-  isHovering,
   points,
-  hoverIndex,
+  cursorIndex,
   lowerBound,
   upperBound,
   startDate,
   endDate,
+  isHidden,
+  lineColor = "gray-300",
 }) => {
-  if (!isHovering) return null;
-  const point = points[hoverIndex];
-  const valueRange = upperBound - lowerBound;
+  if (isHidden) return null;
+  const point = points[cursorIndex];
+  const haveVerticalBounds =
+    typeof upperBound === "number" && typeof lowerBound === "number";
+  const valueRange = haveVerticalBounds ? upperBound - lowerBound : null;
   const msRange = differenceInMilliseconds(startDate, endDate);
   return (
     <div
@@ -32,17 +36,19 @@ const LineChartCursor: React.FC<LineChartCursorProps> = ({
           100 * (differenceInMilliseconds(startDate, point.date) / msRange)
         }%`,
       }}
-      className="absolute top-0 w-0 border-gray-300 h-full"
+      className={`absolute top-0 w-0 border-${lineColor} h-full`}
     >
-      <span
-        className="absolute w-2 h-2 rounded-full bg-primary-700 flex justify-center items-center"
-        style={{
-          bottom: `calc(${
-            100 * ((point.value - lowerBound) / valueRange)
-          }% - 4px)`,
-          left: "-3px",
-        }}
-      />
+      {haveVerticalBounds && valueRange ? (
+        <span
+          className="absolute w-2 h-2 rounded-full bg-primary-700 flex justify-center items-center"
+          style={{
+            bottom: `calc(${
+              100 * ((point.value - lowerBound) / valueRange)
+            }% - 4px)`,
+            left: "-3px",
+          }}
+        />
+      ) : null}
     </div>
   );
 };

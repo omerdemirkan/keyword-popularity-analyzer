@@ -1,8 +1,8 @@
-export interface KeywordPopularity {
+import { ChartPoint } from "./chart.types";
+
+export interface KeywordPopularity extends ChartPoint {
   keyword: string;
-  date: Date;
   timestamp: number;
-  value: number;
   nWeekLow: number;
   nWeekHigh: number;
 }

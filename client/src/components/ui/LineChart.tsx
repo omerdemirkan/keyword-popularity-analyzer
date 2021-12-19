@@ -8,13 +8,21 @@ import LineChartSVG from "./LineChartSVG";
 export interface LineChartProps {
   style?: React.CSSProperties;
   points: ChartPoint[];
+  header?: React.ReactNode;
+  svgColor?: string;
   renderHeader?(details: ChartPoint): React.ReactNode;
+  artifacts?: React.ReactNode;
+  renderArtifacts?(points: ChartPoint[]): React.ReactNode;
 }
 
 const LineChart: React.FC<LineChartProps> = ({
   points,
   style,
+  header,
+  svgColor,
   renderHeader,
+  artifacts,
+  renderArtifacts,
 }) => {
   const [containerRef, containerDimensions] = useDimensions<HTMLDivElement>();
   const [isHovering, setIsHovering] = useState<boolean>(false);
@@ -45,6 +53,7 @@ const LineChart: React.FC<LineChartProps> = ({
 
   return (
     <div className="w-full">
+      {header}
       {renderHeader &&
         renderHeader(points[isHovering ? hoverIndex : points.length - 1])}
       <div
@@ -54,17 +63,20 @@ const LineChart: React.FC<LineChartProps> = ({
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
       >
+        {artifacts}
+        {points && renderArtifacts ? renderArtifacts(points) : null}
         <LineChartSVG
           points={points}
           chartHeight={containerDimensions.height}
           chartWidth={containerDimensions.width}
           lowerBound={bounds.min}
           upperBound={bounds.max}
+          color={svgColor}
         />
         <LineChartCursor
           points={points}
-          hoverIndex={hoverIndex}
-          isHovering={isHovering}
+          cursorIndex={hoverIndex}
+          isHidden={!isHovering}
           lowerBound={bounds.min}
           upperBound={bounds.max}
           startDate={points[0].date}
@@ -81,18 +93,25 @@ export default LineChart;
 export interface LineChartHeaderProps {
   header: string;
   subheader: string;
+  action?: any;
 }
 
 export const LineChartHeader: React.FC<LineChartHeaderProps> = ({
   header,
   subheader,
+  action,
 }) => {
   return (
-    <div>
-      <h3 className="text-2xl font-semibold text-font-primary mb-3">
-        {header}
-      </h3>
-      <h6 className="text-sm font-medium text-font-secondary">{subheader}</h6>
+    <div className="flex flex-wrap justify-between items-center">
+      <div>
+        <h3 className="text-2xl font-semibold text-font-primary mb-3">
+          {header}
+        </h3>
+        <h6 className="text-sm font-medium text-font-secondary mb-2">
+          {subheader}
+        </h6>
+      </div>
+      {action}
     </div>
   );
 };

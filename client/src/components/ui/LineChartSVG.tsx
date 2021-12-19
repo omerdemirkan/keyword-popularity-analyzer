@@ -12,6 +12,7 @@ interface LineChartSVGProps {
   // Numbers instead of dates for memoization (performance)
   startMs?: number;
   endMs?: number;
+  color?: string;
 }
 
 const LineChartSVG: React.FC<LineChartSVGProps> = ({
@@ -20,6 +21,7 @@ const LineChartSVG: React.FC<LineChartSVGProps> = ({
   chartHeight,
   lowerBound,
   upperBound,
+  color = "primary-700",
   startMs = points[0].date.getTime(),
   endMs = points[points.length - 1].date.getTime(),
 }) => {
@@ -36,7 +38,7 @@ const LineChartSVG: React.FC<LineChartSVGProps> = ({
           fill: "none",
           strokeLinejoin: "round",
         }}
-        className="stroke-current text-primary-700 stroke-2"
+        className={`stroke-current text-${color} stroke-2`}
         points={points
           .map(
             ({ value, date }) =>
