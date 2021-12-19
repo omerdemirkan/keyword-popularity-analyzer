@@ -9,7 +9,6 @@ interface LineChartCursorProps {
   startDate: Date;
   endDate: Date;
   isHidden?: boolean;
-  lineColor?: string;
 }
 
 const LineChartCursor: React.FC<LineChartCursorProps> = ({
@@ -20,7 +19,6 @@ const LineChartCursor: React.FC<LineChartCursorProps> = ({
   startDate,
   endDate,
   isHidden,
-  lineColor = "gray-300",
 }) => {
   if (isHidden) return null;
   const point = points[cursorIndex];
@@ -37,7 +35,7 @@ const LineChartCursor: React.FC<LineChartCursorProps> = ({
           100 * (differenceInMilliseconds(startDate, point.date) / msRange)
         }%`,
       }}
-      className={`absolute top-0 w-0 border-${lineColor} h-full`}
+      className="absolute top-0 w-0 border-gray-300 h-full"
     >
       {valueRange && typeof lowerBound === "string" ? (
         <span
