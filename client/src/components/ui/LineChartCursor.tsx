@@ -37,7 +37,7 @@ const LineChartCursor: React.FC<LineChartCursorProps> = ({
       }}
       className="absolute top-0 w-0 border-gray-300 h-full"
     >
-      {valueRange && typeof lowerBound === "string" ? (
+      {valueRange && typeof lowerBound === "number" ? (
         <span
           className="absolute w-2 h-2 rounded-full bg-primary-700 flex justify-center items-center"
           style={{
