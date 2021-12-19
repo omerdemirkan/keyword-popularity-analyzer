@@ -24,9 +24,10 @@ const LineChartCursor: React.FC<LineChartCursorProps> = ({
 }) => {
   if (isHidden) return null;
   const point = points[cursorIndex];
-  const haveVerticalBounds =
-    typeof upperBound === "number" && typeof lowerBound === "number";
-  const valueRange = haveVerticalBounds ? upperBound - lowerBound : null;
+  const valueRange =
+    typeof upperBound === "number" && typeof lowerBound === "number"
+      ? upperBound - lowerBound
+      : null;
   const msRange = differenceInMilliseconds(startDate, endDate);
   return (
     <div
@@ -38,7 +39,7 @@ const LineChartCursor: React.FC<LineChartCursorProps> = ({
       }}
       className={`absolute top-0 w-0 border-${lineColor} h-full`}
     >
-      {haveVerticalBounds && valueRange ? (
+      {valueRange && typeof lowerBound === "string" ? (
         <span
           className="absolute w-2 h-2 rounded-full bg-primary-700 flex justify-center items-center"
           style={{

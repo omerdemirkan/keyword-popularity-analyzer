@@ -6,7 +6,6 @@ import LineChartCursor from "./LineChartCursor";
 import LineChartSVG from "./LineChartSVG";
 
 export interface LineChartProps {
-  style?: React.CSSProperties;
   points: ChartPoint[];
   header?: React.ReactNode;
   svgColor?: string;
@@ -17,7 +16,6 @@ export interface LineChartProps {
 
 const LineChart: React.FC<LineChartProps> = ({
   points,
-  style,
   header,
   svgColor,
   renderHeader,
@@ -59,7 +57,6 @@ const LineChart: React.FC<LineChartProps> = ({
       <div
         ref={containerRef}
         className="h-44 relative"
-        style={style}
         onMouseEnter={() => setIsHovering(true)}
         onMouseLeave={() => setIsHovering(false)}
       >
