@@ -4,7 +4,7 @@ import LineChart, {
   LineChartHeaderSkeleton,
   LineChartSkeleton,
 } from "../components/ui/LineChart";
-import { ChartPoint, Subscription } from "../utils/types";
+import { ChartPoint, KeywordPopularity, Subscription } from "../utils/types";
 import { useEffect, useState } from "react";
 import {
   fetchCryptoChart,
@@ -22,6 +22,7 @@ import { format } from "date-fns";
 import { localStorageCache } from "../utils/helpers/cache.helpers";
 import { useRouter } from "next/router";
 import NavLink from "../components/util/NavLink";
+import LineChartCursor from "../components/ui/LineChartCursor";
 
 const WEEKS = 416;
 const SEARCH_TERM = "bitcoin price";
@@ -40,7 +41,9 @@ const fetchCryptoChartCached = localStorageCache(
 
 export default function Home() {
   const [priceChart, setPriceChart] = useState<ChartPoint[]>([]);
-  const [popularityChart, setPopularityChart] = useState<ChartPoint[]>([]);
+  const [popularityChart, setPopularityChart] = useState<KeywordPopularity[]>(
+    []
+  );
   const [isSubscribing, setIsSubscribing] = useState<boolean>(false);
   const router = useRouter();
 
@@ -118,27 +121,6 @@ export default function Home() {
           </div>
         </div>
         <div className="mb-20 mt-12">
-          {priceChart.length ? (
-            <LineChart
-              points={priceChart}
-              renderHeader={({ value, date }) => (
-                <LineChartHeader
-                  header={getDisplayPrice(value)}
-                  subheader={`BTC / USD, ${format(
-                    date,
-                    "MMM d, yyyy"
-                  ).toUpperCase()}`}
-                />
-              )}
-            />
-          ) : (
-            <>
-              <LineChartHeaderSkeleton />
-              <LineChartSkeleton />
-            </>
-          )}
-        </div>
-        <div className="mb-36">
           {popularityChart.length ? (
             <LineChart
               points={popularityChart}
@@ -148,6 +130,48 @@ export default function Home() {
                     WEEKS / 52
                   )}-year max`}
                   subheader={`"${SEARCH_TERM.toUpperCase()}" SEARCHES, ${format(
+                    date,
+                    "MMM d, yyyy"
+                  ).toUpperCase()}`}
+                  action={
+                    <p className="text-sm text-font-secondary my-2">
+                      52+ week lows marked
+                    </p>
+                  }
+                />
+              )}
+              artifacts={
+                <>
+                  {popularityChart.map((trendData, i) =>
+                    trendData.nWeekLow > 52 ? (
+                      <LineChartCursor
+                        points={popularityChart}
+                        endDate={
+                          popularityChart[popularityChart.length - 1].date
+                        }
+                        startDate={popularityChart[0].date}
+                        cursorIndex={i}
+                      />
+                    ) : null
+                  )}
+                </>
+              }
+            />
+          ) : (
+            <>
+              <LineChartHeaderSkeleton />
+              <LineChartSkeleton />
+            </>
+          )}
+        </div>
+        <div className="mb-36">
+          {priceChart.length ? (
+            <LineChart
+              points={priceChart}
+              renderHeader={({ value, date }) => (
+                <LineChartHeader
+                  header={getDisplayPrice(value)}
+                  subheader={`BTC / USD, ${format(
                     date,
                     "MMM d, yyyy"
                   ).toUpperCase()}`}

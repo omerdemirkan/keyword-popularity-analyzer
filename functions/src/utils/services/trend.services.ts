@@ -5,7 +5,7 @@ import {
   GoogleTrendsTimelineData,
 } from "google-trends-api";
 import { GOOGLE_TRENDS_MAX_WEEKS } from "../constants";
-import db from "../db";
+import db from "../../db";
 import { KeywordPopularity, fetchKeywordTrendOptions } from "../types";
 
 export async function fetchKeywordTrend(
@@ -117,7 +117,7 @@ async function syncNewTrendTimelineWithDatabase(
       batch.create(docRef, trendData);
       count++;
     } else if (existingTrendItemMap[id]?.value !== trendData.value) {
-      batch.set(docRef, { value: existingTrendItemMap[id].value });
+      batch.update(docRef, { value: existingTrendItemMap[id].value });
       count++;
     }
     if (count == 400) {

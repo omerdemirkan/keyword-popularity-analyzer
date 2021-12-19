@@ -1,8 +1,8 @@
 import { config } from "../config";
-import { ALERT_KEYWORDS, MIN_ALERT_WEEK_LOW } from "../constants";
+import { ALERT_KEYWORDS, MIN_ALERT_WEEK_LOW } from "../utils/constants";
 import db from "../db";
-import { fetchKeywordTrend, sendNWeekLowEmails } from "../services";
-import { Job } from "../types";
+import { fetchKeywordTrend, sendNWeekLowEmails } from "../utils/services";
+import { Job } from "../utils/types";
 
 // job that runs weekly that checks for declining popularity
 // in crypto and conditionally sends alerts to users.

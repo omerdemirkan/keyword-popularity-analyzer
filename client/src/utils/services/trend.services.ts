@@ -1,22 +1,29 @@
 import { httpsCallable } from "firebase/functions";
 import { functions } from "../../firebase";
-import { ChartPoint } from "../types";
+import { ChartPoint, KeywordPopularity } from "../types";
 
-const getKeywordTrend = httpsCallable(functions, "getKeywordTrend");
+const getKeywordTrend = httpsCallable<
+  { keyword: string; weeks: number },
+  KeywordPopularity[]
+>(functions, "getKeywordTrend");
+
 export async function fetchKeywordPopularityChart(
   keyword: string,
   weeks: number
-): Promise<ChartPoint[]> {
-  const keywordTrend = await getKeywordTrend({ keyword, weeks });
-  console.log(keywordTrend);
-  // @ts-ignore
-  return keywordTrend.data.map((timelineData) => ({
+): Promise<KeywordPopularity[]> {
+  const { data: keywordTrend } = await getKeywordTrend({
+    keyword,
+    weeks,
+  });
+  return keywordTrend.map((timelineData) => ({
     ...timelineData,
     date: new Date(timelineData.timestamp * 1000),
   }));
 }
 
-export function decodeCachedChartPoints(points: ChartPoint[]): ChartPoint[] {
+export function decodeCachedChartPoints<T extends ChartPoint>(
+  points: T[]
+): T[] {
   return points.map((point) => ({
     ...point,
     date: new Date(point.date),

@@ -1,6 +1,6 @@
 import db from "../db";
-import { validateEmail } from "../helpers";
-import { Controller } from "../types";
+import { validateEmail } from "../utils/helpers";
+import { Controller } from "../utils/types";
 
 export const createSubscription: Controller<{ email: string }, void> = async ({
   email,

@@ -1,4 +1,4 @@
-import { config } from "../config";
+import { config } from "../../config";
 import * as sendGrid from "@sendgrid/mail";
 
 sendGrid.setApiKey(config().sendGrid.apiKey);

@@ -5,7 +5,7 @@ export function localStorageCache<T extends Function>(
 ): T {
   // @ts-ignore
   return async function (...args) {
-    const key = name + args.join("-"); // TODO accomidate object arguments to avoid [Object, Object] issue
+    const key = `${name}-${serializeArguments(args)}`; // TODO accomidate object arguments to avoid [Object, Object] issue
     const storedString = localStorage.getItem(key);
     const cache = storedString && JSON.parse(storedString);
     const nowMs = Date.now();
@@ -18,4 +18,8 @@ export function localStorageCache<T extends Function>(
     );
     return result;
   };
+}
+
+function serializeArguments(args: any[]): string {
+  return args.join("-");
 }

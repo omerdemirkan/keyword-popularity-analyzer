@@ -1,5 +1,5 @@
-import { fetchKeywordTrend } from "../services";
-import { Controller, KeywordPopularity } from "../types";
+import { fetchKeywordTrend } from "../utils/services";
+import { Controller, KeywordPopularity } from "../utils/types";
 
 export interface GetTrendsData {
   keyword: string;

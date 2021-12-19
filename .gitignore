@@ -66,3 +66,6 @@ node_modules/
 .env
 
 .runtimeconfig.json
+
+# service account api keys
+/functions/service-account.json
