@@ -111,12 +111,12 @@ export const LineChartHeader: React.FC<LineChartHeaderProps> = ({
 };
 
 export const LineChartSkeleton: React.FC = () => {
-  return <div className="w-full h-40 bg-gray-50"></div>;
+  return <div className="w-full h-40 bg-gray-50 animate-pulse"></div>;
 };
 
 export const LineChartHeaderSkeleton: React.FC = () => {
   return (
-    <div aria-label="Chart Loading Indicator">
+    <div aria-label="Chart Loading Indicator animate-pulse">
       <div className="h-6 w-48 mb-3 bg-gray-50"></div>
       <div className="h-5 w-52 mb-3 bg-gray-50"></div>
     </div>
