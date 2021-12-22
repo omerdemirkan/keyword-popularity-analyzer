@@ -83,10 +83,10 @@ export async function fetchKeywordTrend(
     );
   }
 
-  const unzippedTimelines = [];
+  const unzippedTimelines = (
+    await Promise.all(unzippedTimelinesPromises)
+  ).flatMap((timelines) => timelines);
   if (existingTimeline.length) unzippedTimelines.push(existingTimeline);
-  for (const timelines of await Promise.all(unzippedTimelinesPromises))
-    unzippedTimelines.push(...timelines);
 
   const zippedTimeline = zipRelativeTimelines(unzippedTimelines);
   populateKeywordTrends(zippedTimeline);
