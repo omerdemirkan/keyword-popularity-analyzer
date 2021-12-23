@@ -27,17 +27,17 @@ import Image from "next/image";
 
 const WEEKS = 416;
 const SEARCH_TERM = "bitcoin price";
-const cacheRevalidationMs = 1000 * 60 * 60 * 12; // 12 hours
+const CACHE_REVALIDATION_MS = 1000 * 60 * 60 * 12; // 12 hours
 
 const fetchKeywordPopularityChartCached = localStorageCache(
   fetchKeywordPopularityChart,
   "fetchKeywordPopularityChart",
-  cacheRevalidationMs
+  CACHE_REVALIDATION_MS
 );
 const fetchCryptoChartCached = localStorageCache(
   fetchCryptoChart,
   "fetchCryptoChart",
-  cacheRevalidationMs
+  CACHE_REVALIDATION_MS
 );
 
 export default function Home() {

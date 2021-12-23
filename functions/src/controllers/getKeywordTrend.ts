@@ -1,4 +1,4 @@
-import { fetchKeywordTrend } from "../utils/services";
+import { fetchKeywordTrendFromDatabase } from "../utils/services";
 import { Controller, KeywordPopularity } from "../utils/types";
 
 export interface GetTrendsData {
@@ -11,5 +11,6 @@ export const getKeywordTrend: Controller<
   Promise<KeywordPopularity[]>
 > = async function ({ keyword, weeks }) {
   if (typeof keyword !== "string") throw new Error("keyword query expected.");
-  return await fetchKeywordTrend(keyword, { weeks });
+  const keywordTrend = await fetchKeywordTrendFromDatabase(keyword);
+  return keywordTrend.slice(keywordTrend.length - weeks);
 };

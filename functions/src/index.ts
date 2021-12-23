@@ -20,3 +20,7 @@ export const sendWelcomeEmail = functions.https.onCall(
 export const sendAlerts = functions.pubsub
   .schedule("0 12 * * 0")
   .onRun(jobs.sendWeeklyAlerts);
+
+export const refreshTrendsInDatabase = functions.pubsub
+  .schedule("0 11 * * 0")
+  .onRun(jobs.refreshTrendsInDatabase);

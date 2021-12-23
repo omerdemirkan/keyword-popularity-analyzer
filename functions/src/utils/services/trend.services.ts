@@ -1,103 +1,52 @@
-import { add, differenceInDays, sub } from "date-fns";
 import {
   interestOverTime,
   Options,
   GoogleTrendsTimelineData,
 } from "google-trends-api";
-import { GOOGLE_TRENDS_MAX_WEEKS } from "../constants";
+import { TREND_START } from "../constants";
 import db from "../../db";
-import { KeywordPopularity, fetchKeywordTrendOptions } from "../types";
+import { KeywordPopularity } from "../types";
 
-export async function fetchKeywordTrend(
-  keyword: string,
-  {
-    weeks = GOOGLE_TRENDS_MAX_WEEKS,
-    // To better determine nWeekHigh and nWeekLow values
-    // for the first keyword popularity entries
-    trendWeekClearance = 104,
-  }: fetchKeywordTrendOptions = {}
+export async function fetchKeywordTrendFromDatabase(
+  keyword: string
 ): Promise<KeywordPopularity[]> {
-  const overlap = Math.floor(GOOGLE_TRENDS_MAX_WEEKS / 2);
-  // First checking for existing entries, since we might not have to
-  // ping google trends too much, or at all.
-
-  const now = new Date();
-  const startDate = sub(now, { weeks });
-
   const trendsCollection = db.collection("trends");
   const timelineSnapshot = await trendsCollection
     .where("keyword", "==", keyword)
     .orderBy("timestamp", "asc")
     .get();
 
-  const existingTimeline = timelineSnapshot.docs.map(
+  return timelineSnapshot.docs.map(
     (doc) =>
       ({
         ...doc.data(),
         date: unixTimestampToDate(doc.get("timestamp")),
       } as KeywordPopularity)
   );
-  const lastTimelineEntry = existingTimeline.length
-    ? unixTimestampToDate(
-        timelineSnapshot.docs[timelineSnapshot.size - 1].get("timestamp")
-      )
-    : null;
-  const firstTimelineEntry = existingTimeline.length
-    ? unixTimestampToDate(timelineSnapshot.docs[0].get("timestamp"))
-    : null;
-  const unzippedTimelinesPromises: Promise<KeywordPopularity[][]>[] = [];
-
-  if (timelineSnapshot.empty) {
-    unzippedTimelinesPromises.push(
-      fetchUnzippedTimelines({
-        keyword,
-        overlap,
-        startDate: sub(startDate, { weeks: trendWeekClearance }),
-        endDate: now,
-      })
-    );
-  }
-
-  if (
-    firstTimelineEntry &&
-    differenceInDays(firstTimelineEntry, startDate) > 7
-  ) {
-    unzippedTimelinesPromises.push(
-      fetchUnzippedTimelines({
-        keyword,
-        overlap,
-        startDate: sub(startDate, { weeks: trendWeekClearance }),
-        endDate: add(firstTimelineEntry, { weeks: overlap }),
-      })
-    );
-  }
-
-  if (lastTimelineEntry && differenceInDays(now, lastTimelineEntry) > 7) {
-    unzippedTimelinesPromises.push(
-      fetchUnzippedTimelines({
-        keyword,
-        overlap,
-        startDate: sub(lastTimelineEntry, { weeks: overlap }),
-        endDate: now,
-      })
-    );
-  }
-
-  const unzippedTimelines = (
-    await Promise.all(unzippedTimelinesPromises)
-  ).flatMap((timelines) => timelines);
-  if (existingTimeline.length) unzippedTimelines.push(existingTimeline);
-
-  const zippedTimeline = zipRelativeTimelines(unzippedTimelines);
-  populateKeywordTrends(zippedTimeline);
-  syncNewTrendTimelineWithDatabase(zippedTimeline, existingTimeline);
-
-  const slicedTimeline = zippedTimeline.slice(zippedTimeline.length - weeks);
-  const normalizedTimeline = normalizeTrendTimeline(slicedTimeline);
-  return normalizedTimeline;
 }
 
-async function syncNewTrendTimelineWithDatabase(
+export async function refreshKeywordTrendInDatabase(
+  keyword: string
+): Promise<void> {
+  const end = new Date();
+  const start = TREND_START;
+  const [unzippedTimelines, existingTimeline] = await Promise.all([
+    fetchUnzippedTrends({
+      endDate: end,
+      startDate: start,
+      keyword,
+      overlapWeeks: 52,
+    }),
+    fetchKeywordTrendFromDatabase(keyword),
+  ]);
+  const newTrend = normalizeTrendTimeline(
+    zipRelativeTimelines(unzippedTimelines)
+  );
+  populateNWeekLowsAndHighs(newTrend);
+  syncTrendWithDatabase(newTrend, existingTimeline);
+}
+
+async function syncTrendWithDatabase(
   newTrendTimeline: KeywordPopularity[],
   existingTrendTimeline: KeywordPopularity[]
 ) {
@@ -106,11 +55,11 @@ async function syncNewTrendTimelineWithDatabase(
   let count = 0; // Firebase allows at most 500 operations per batch
   const existingTrendItemMap: { [key: string]: KeywordPopularity } = {};
   for (const trendData of existingTrendTimeline)
-    existingTrendItemMap[getKeywordPopularityId(trendData)] = trendData;
+    existingTrendItemMap[getKeywordTrendDataId(trendData)] = trendData;
 
   const promises: Promise<FirebaseFirestore.WriteResult[]>[] = [];
   for (const trendData of newTrendTimeline) {
-    const id = getKeywordPopularityId(trendData);
+    const id = getKeywordTrendDataId(trendData);
     const docRef = trendsCollection.doc(id);
 
     if (!existingTrendItemMap[id]) {
@@ -129,31 +78,31 @@ async function syncNewTrendTimelineWithDatabase(
   await Promise.all(promises);
 }
 
-async function fetchGoogleTrends(
+async function fetchTrendsFromGoogleTrends(
   options: Options
 ): Promise<GoogleTrendsTimelineData[]> {
   const res = await interestOverTime(options);
   return JSON.parse(res).default.timelineData;
 }
 
-async function fetchUnzippedTimelines({
+async function fetchUnzippedTrends({
   startDate,
   endDate,
-  overlap,
+  overlapWeeks,
   keyword,
 }: {
   startDate: Date;
   endDate: Date;
-  overlap: number;
+  overlapWeeks: number;
   keyword: string;
 }): Promise<KeywordPopularity[][]> {
   const promises: Promise<GoogleTrendsTimelineData[]>[] = [];
   let currMs = startDate.getTime();
   const endMs = endDate.getTime();
-  const overlapMs = 1000 * 60 * 60 * 24 * 7 * overlap;
+  const overlapMs = 1000 * 60 * 60 * 24 * 7 * overlapWeeks;
   while (currMs < endMs) {
     promises.push(
-      fetchGoogleTrends({
+      fetchTrendsFromGoogleTrends({
         keyword,
         startTime: new Date(currMs),
         endTime: new Date(currMs + 2 * overlapMs),
@@ -255,7 +204,7 @@ function getSortedAndFilteredUnzippedTimelines(
   return filteredTimelines;
 }
 
-function populateKeywordTrends(timeline: KeywordPopularity[]): void {
+function populateNWeekLowsAndHighs(timeline: KeywordPopularity[]): void {
   for (let i = 0; i < timeline.length; i++) {
     let j: number;
 
@@ -303,6 +252,6 @@ function normalizeTrendTimeline(
   return timeline.map((data) => ({ ...data, value: data.value * multiplier }));
 }
 
-function getKeywordPopularityId(data: KeywordPopularity) {
+function getKeywordTrendDataId(data: KeywordPopularity) {
   return data.keyword + "-" + data.timestamp;
 }

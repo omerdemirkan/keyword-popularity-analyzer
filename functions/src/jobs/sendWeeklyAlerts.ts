@@ -1,7 +1,10 @@
 import { config } from "../config";
 import { ALERT_KEYWORDS, MIN_ALERT_WEEK_LOW } from "../utils/constants";
 import db from "../db";
-import { fetchKeywordTrend, sendNWeekLowEmails } from "../utils/services";
+import {
+  fetchKeywordTrendFromDatabase,
+  sendNWeekLowEmails,
+} from "../utils/services";
 import { Job } from "../utils/types";
 
 // job that runs weekly that checks for declining popularity
@@ -9,7 +12,7 @@ import { Job } from "../utils/types";
 export const sendWeeklyAlerts: Job = async function () {
   try {
     const promises = ALERT_KEYWORDS.map((keyword) =>
-      fetchKeywordTrend(keyword)
+      fetchKeywordTrendFromDatabase(keyword)
     );
     const keywordTrends = await Promise.all(promises);
 

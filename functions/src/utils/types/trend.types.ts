@@ -6,8 +6,3 @@ export interface KeywordPopularity {
   nWeekLow: number;
   nWeekHigh: number;
 }
-
-export interface fetchKeywordTrendOptions {
-  weeks?: number;
-  trendWeekClearance?: number;
-}
