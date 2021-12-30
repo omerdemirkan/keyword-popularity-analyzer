@@ -96,10 +96,11 @@ async function fetchUnzippedTrends({
   overlapWeeks: number;
   keyword: string;
 }): Promise<KeywordPopularity[][]> {
-  const promises: Promise<GoogleTrendsTimelineData[]>[] = [];
   let currMs = startDate.getTime();
   const endMs = endDate.getTime();
   const overlapMs = 1000 * 60 * 60 * 24 * 7 * overlapWeeks;
+
+  const promises: Promise<GoogleTrendsTimelineData[]>[] = [];
   while (currMs < endMs) {
     promises.push(
       fetchTrendsFromGoogleTrends({

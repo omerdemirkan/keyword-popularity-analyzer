@@ -4,3 +4,7 @@ export const emailRegex =
 export function validateEmail(email: string): boolean {
   return emailRegex.test(String(email).toLowerCase());
 }
+
+export function parseEmail(emailStr: string): string {
+  return emailStr.toLowerCase();
+}
