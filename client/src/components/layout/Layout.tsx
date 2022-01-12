@@ -1,5 +1,6 @@
 import React from "react";
 import Divider from "../ui/Divider";
+import CopyToClipboardWrapper from "../util/CopyToClipboardWrapper";
 import NavLink from "../util/NavLink";
 import Container from "./Container";
 
@@ -54,7 +55,9 @@ const Footer: React.FC = () => {
   return (
     <footer className="py-6 flex justify-center">
       <span className="text-right pr-4">
-        <p className="text-xs text-font-secondary font-light mb-2">SHARE</p>
+        <CopyToClipboardWrapper text="https://www.remindmeaboutbitcoin.com/">
+          <p className="text-xs text-font-secondary font-light mb-2">SHARE</p>
+        </CopyToClipboardWrapper>
         <NavLink href="/how-it-works">
           <p className="text-xs text-font-secondary font-light mb-2">
             HOW IT WORKS
